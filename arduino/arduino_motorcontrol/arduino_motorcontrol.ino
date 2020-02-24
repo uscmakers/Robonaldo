@@ -202,9 +202,8 @@ ISR(TIMER1_COMPA_vect){
 }
 /*encoder interrupt*/
 ISR(PCINT1_vect) {	//interrupt pins, port c
-	unsigned char myC = PINC;
-	unsigned char a = myC & (1<<1);
-	unsigned char b = myC & (1<<5);
+	unsigned char a = digitalRead(LEFTencoder_A);
+	unsigned char b = digitalRead(RIGHTencoder_B);
 
 	if (encoder_laststate == 0) {
 		// Handle A and B inputs for state 0
