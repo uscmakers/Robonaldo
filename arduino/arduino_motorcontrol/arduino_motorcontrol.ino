@@ -2,6 +2,7 @@
 #include <robonaldo/motor_speeds.h>
 #include <robonaldo/beam_break.h>
 #include <robonaldo/imu_values.h>
+#include <robonaldo/encoder_values.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <Wire.h>
@@ -27,13 +28,12 @@ const float TCCR0B_FREQ = 244.14f;
 const int BBPOUT=13; //might be unnecessary if 5V pin is open 
 const int BBPIN=4;
 /*encoders*/
-const int LEFTENCODER_A = 1; 
-const int LEFTENCODER_B = 5;
-const int RIGHTENCODER_A = 2; //not sure about RIGHT ENCODER pins
-const int RIGHTENCODER_B = 6; 
-// volatile unsigned char LEFTencoder_changed;  // Flag for state change
-volatile unsigned char LEFTencoder_laststate, LEFTencoder_state;
-volatile int LEFTencoder_count=0;
+const int LEFT_ENCODER_A = 1; 
+const int LEFT_ENCODER_B = 5;
+const int RIGHT_ENCODER_A = 2; //not sure about RIGHT ENCODER pins
+const int RIGHT_ENCODER_B = 6; 
+volatile unsigned char encoder_laststate, encoder_state;
+volatile int encoder_count=0;
 
 volatile unsigned char timer_reached1sec = 0;
 unsigned char lastState = 0;
@@ -57,8 +57,9 @@ void setupSensor()
 }
 
 ros::Subscriber<robonaldo::motor_speeds> sub("motor_control", &messageCb);
-ros::Publisher beam_pub;
-ros::Publisher imu_pub;
+ros::Publisher beam_pub("beam_state", nullptr);
+ros::Publisher imu_pub("imu_values", nullptr);
+ros::Publisher encoder_pub("encoder_values", nullptr);
 
 void setup() {
   // motors
@@ -72,13 +73,14 @@ void setup() {
   digitalWrite(BBPIN, HIGH);
 
   //encoder code
-  pinMode(LEFTENCODER_A, INPUT);
-  pinMode(LEFTENCODER_B, INPUT);
+  pinMode(LEFT_ENCODER_A, INPUT);
+  pinMode(LEFT_ENCODER_B, INPUT);
     
   n.initNode();
   n.subscribe(sub);
-  beam_pub = n.advertise<robonaldo::beam_break>("beam_state", 100);
-  imu_pub = n.advertise<robonaldo::imu_values>("imu_values", 100);
+  n.advertise(beam_pub);
+  n.advertise(imu_pub);
+  n.advertise(encoder_pub);
   init_timer();
   sei();
 	
@@ -100,17 +102,17 @@ void loop(){
 
   char beamState=digitalRead(BBPIN);
   if (beamState != lastState) {
-    robonaldo::beam_break msg;
-    msg.beam_broken = beamState;
-    beam_pub.publish(msg);
+    robonaldo::beam_break beam_msg;
+    beam_msg.beam_broken = beamState;
+    beam_pub.publish(&beam_msg);
   } 
-  lastState = beamState   
+  lastState = beamState;   
 
   encoder_changeState();
 
-  robonaldo::encoder_values msg;				//encoder_values is the name of the 
-  msg.encoder_counts = encoder_count;			//encoder_counts is new
-  encode_pub.publish(msg);					//encode_pub is the name of the 
+  robonaldo::encoder_values encoder_msg;				//encoder_values is the name of the 
+  encoder_msg.left_count = encoder_count;			//encoder_counts is new
+  encoder_pub.publish(&encoder_msg);					//encode_pub is the name of the 
 
   //imu stuff
   lsm.read();  /* ask it to read in the data */ 
@@ -120,20 +122,20 @@ void loop(){
 
   lsm.getEvent(&a, &m, &g, &temp); 
 
-  robonaldo::imu msg;
-  msg.ax = a.acceleration.x;
-  msg.ay = a.acceleration.y;
-  msg.az = a.acceleration.z;
+  robonaldo::imu_values imu_msg;
+  imu_msg.ax = a.acceleration.x;
+  imu_msg.ay = a.acceleration.y;
+  imu_msg.az = a.acceleration.z;
   
-  msg.mx = m.magnetic.x;
-  msg.my = m.magnetic.y;
-  msg.mz = m.magnetic.z;
+  imu_msg.mx = m.magnetic.x;
+  imu_msg.my = m.magnetic.y;
+  imu_msg.mz = m.magnetic.z;
   
-  msg.gx = g.gyro.x;
-  msg.gy = g.gyro.y;
-  msg.gz = g.gyro.z;
+  imu_msg.gx = g.gyro.x;
+  imu_msg.gy = g.gyro.y;
+  imu_msg.gz = g.gyro.z;
   
-  imu_pub.publish(msg);
+  imu_pub.publish(&imu_msg);
 	
 }
 void pin_init(){
@@ -184,8 +186,8 @@ void init_timer(){
   TIMSK1 |= (1 << OCIE1A);
 }
 void encoder_changeState(){
-	unsigned int initA = digitalRead(LEFTENCODER_A);
-	unsigned int initB = digitalRead(LEFTENCODER_B);
+	unsigned int initA = digitalRead(LEFT_ENCODER_A);
+	unsigned int initB = digitalRead(LEFT_ENCODER_B);
   // encoder_changed = 0;
   if (!initB && !initA){
     encoder_laststate = 0;
@@ -210,8 +212,8 @@ ISR(TIMER1_COMPA_vect){
 }
 /*encoder interrupt*/
 ISR(PCINT1_vect) {	//left encoder pin b
-	unsigned char a = digitalRead(LEFTencoder_A);
-	unsigned char b = digitalRead(RIGHTencoder_B);
+	unsigned char a = digitalRead(LEFT_ENCODER_A);
+	unsigned char b = digitalRead(RIGHT_ENCODER_B);
 
 	if (encoder_laststate == 0) {
 		// Handle B input for state 0
@@ -244,8 +246,8 @@ ISR(PCINT1_vect) {	//left encoder pin b
 
 }
 ISR(PCINT2_vect){   //for checking left encoder pin A
-	unsigned char a = digitalRead(LEFTencoder_A);
-	unsigned char b = digitalRead(RIGHTencoder_B);
+	unsigned char a = digitalRead(LEFT_ENCODER_A);
+	unsigned char b = digitalRead(RIGHT_ENCODER_B);
 
 	if (encoder_laststate == 0) {
 		// Handle A input for state 0
