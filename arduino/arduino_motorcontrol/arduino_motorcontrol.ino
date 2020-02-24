@@ -1,9 +1,13 @@
 #include <ros.h>
 #include <robonaldo/motor_speeds.h>
 #include <robonaldo/beam_break.h>
-#include <robonald/imu.h>
+#include <robonaldo/imu_values.h>
 #include <avr/interrupt.h>
 #include <avr/io.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <Adafruit_LSM9DS1.h>
+#include <Adafruit_Sensor.h>
 
 /*imu*/
 Adafruit_LSM9DS1 lsm = Adafruit_LSM9DS1();
@@ -53,8 +57,8 @@ void setupSensor()
 }
 
 ros::Subscriber<robonaldo::motor_speeds> sub("motor_control", &messageCb);
-ros::Publisher<robonaldo::beam_break> beam_pub("beam_breaker");
-ros::Publisher<robonaldo::imu_values> imu_pub("imu");
+ros::Publisher beam_pub;
+ros::Publisher imu_pub;
 
 void setup() {
   // motors
@@ -73,6 +77,8 @@ void setup() {
     
   n.initNode();
   n.subscribe(sub);
+  beam_pub = n.advertise<robonaldo::beam_break>("beam_state", 100);
+  imu_pub = n.advertise<robonaldo::imu_values>("imu_values", 100);
   init_timer();
   sei();
 	
