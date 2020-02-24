@@ -55,7 +55,9 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
     FILES
     motor_speeds.msg
-    encoder_data.msg
+    encoder_values.msg
+    imu_values.msg
+    beam_break.msg
     keyboard_input.msg
     odometry.msg
 
