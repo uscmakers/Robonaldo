@@ -31,7 +31,7 @@ const int LEFTENCODER_A = 1;
 const int LEFTENCODER_B = 5;
 const int RIGHTENCODER_A = 2; //not sure about RIGHT ENCODER pins
 const int RIGHTENCODER_B = 6; 
-volatile unsigned char LEFTencoder_changed;  // Flag for state change
+// volatile unsigned char LEFTencoder_changed;  // Flag for state change
 volatile unsigned char LEFTencoder_laststate, LEFTencoder_state;
 volatile int LEFTencoder_count=0;
 
@@ -72,8 +72,8 @@ void setup() {
   digitalWrite(BBPIN, HIGH);
 
   //encoder code
-  pinMode(ENCODER1_A, INPUT);
-  pinMode(ENCODER1_B, INPUT);
+  pinMode(LEFTENCODER_A, INPUT);
+  pinMode(LEFTENCODER_B, INPUT);
     
   n.initNode();
   n.subscribe(sub);
@@ -107,9 +107,11 @@ void loop(){
   lastState = beamState   
 
   encoder_changeState();
-  if (encoder_changed) { // Did state change?
-    encoder_changed = 0; // Reset changed flag
-  }
+
+  robonaldo::encoder_values msg;				//encoder_values is the name of the 
+  msg.encoder_counts = encoder_count;			//encoder_counts is new
+  encode_pub.publish(msg);					//encode_pub is the name of the 
+
   //imu stuff
   lsm.read();  /* ask it to read in the data */ 
 
@@ -184,7 +186,7 @@ void init_timer(){
 void encoder_changeState(){
 	unsigned int initA = digitalRead(LEFTENCODER_A);
 	unsigned int initB = digitalRead(LEFTENCODER_B);
-  encoder_changed = 0;
+  // encoder_changed = 0;
   if (!initB && !initA){
     encoder_laststate = 0;
   }
@@ -207,56 +209,71 @@ ISR(TIMER1_COMPA_vect){
   timer_reached1sec = 1;
 }
 /*encoder interrupt*/
-ISR(PCINT1_vect) {	//interrupt pins, port c
+ISR(PCINT1_vect) {	//left encoder pin b
 	unsigned char a = digitalRead(LEFTencoder_A);
 	unsigned char b = digitalRead(RIGHTencoder_B);
 
 	if (encoder_laststate == 0) {
-		// Handle A and B inputs for state 0
-		if(a){//CW
-			encoder_state = 1;
-			encoder_count++;
-		}
-		else if(b){	//CCW
+		// Handle B input for state 0
+		if(b){	//CCW
 			encoder_state = 2;
 			encoder_count--;
 		}
 	}
 	else if (encoder_laststate == 1) {
-		// Handle A and B inputs for state 1
-		if(!a){	//CCW
-			encoder_state = 0;
-			encoder_count--;
-		}
-		else if(b){	//CW
+		// Handle B input for state 1
+    if(b){	//CW
 			encoder_state = 3;
 			encoder_count++;
 		}
 	}
 	else if (encoder_laststate == 2) {
-		// Handle A and B inputs for state 2
-		if(a){	//CCW
-			encoder_state = 3;
-			encoder_count--;
-		}
-		else if(!b){	//CW
+		// Handle B input for state 2
+		if(!b){	//CW
 			encoder_state = 0; 
 			encoder_count++;
 		}
 	}
 	else {   // encoder_laststate = 3
-		// Handle A and B inputs for state 3
-		if(!a){	//CW
-			encoder_state = 2;
-			encoder_count++;
-		}
-		else if(!b){	//CCW
+		// Handle B input for state 3
+	  if(!b){	//CCW
 			encoder_state = 1;
 			encoder_count--;			
 		}
 	}
-	if (encoder_state != encoder_laststate) {
-		changed = 1;
-		encoder_laststate = encoder_state;
+
+}
+ISR(PCINT2_vect){   //for checking left encoder pin A
+	unsigned char a = digitalRead(LEFTencoder_A);
+	unsigned char b = digitalRead(RIGHTencoder_B);
+
+	if (encoder_laststate == 0) {
+		// Handle A input for state 0
+		if(a){//CW
+			encoder_state = 1;
+			encoder_count++;
+		}
+	}
+	else if (encoder_laststate == 1) {
+		// Handle A input for state 1
+		if(!a){	//CCW
+			encoder_state = 0;
+			encoder_count--;
+		}
+
+	}
+	else if (encoder_laststate == 2) {
+		// Handle A input for state 2
+		if(a){	//CCW
+			encoder_state = 3;
+			encoder_count--;
+		}
+	}
+	else {   // encoder_laststate = 3
+		// Handle A input for state 3
+		if(!a){	//CW
+			encoder_state = 2;
+			encoder_count++;
+		}
 	}
 }
