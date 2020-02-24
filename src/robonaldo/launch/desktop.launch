@@ -1,0 +1,3 @@
+<launch>
+	<node pkg="robonaldo" type="desktop" name="desktop"/>
+</launch>

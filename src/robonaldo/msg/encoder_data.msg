@@ -1,0 +1,4 @@
+uint32 left_count
+uint32 right_count
+float32 left_velocity
+float32 right_velocity

@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <world name="default">
+    <!-- A global light source -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <!-- A ground plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <!-- A testing model that includes the Velodyne sensor model -->
+    <model name="main_robonaldo">
+      <include>
+        <uri>model://robonaldo</uri>
+      </include>
+
+      <!-- Attach the plugin to this model -->
+      <plugin name="robonaldo_control" filename="librobonaldo_plugin.so"/>
+    </model>
+
+  </world>
+</sdf>
