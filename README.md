@@ -2,13 +2,13 @@
 
 ## Installation
 1. Install ros melodic with these instructions: [http://wiki.ros.org/melodic/Installation/Ubuntu](http://wiki.ros.org/melodic/Installation/Ubuntu)
-2. Install the ZED camera software here: [https://www.stereolabs.com/developers/release/](https://www.stereolabs.com/developers/release/)
-3. Install the remaining dependencies by running:
+2. Install the remaining dependencies by running:
 ```
 sudo apt-get install libsdl2-dev ros-melodic-rosserial-arduino ros-melodic-rosserial
 sudo ln -s /usr/include/opencv4 /usr/include/opencv
 ```
-4. Make the sub ports not require root: [https://github.com/LairdCP/UwTerminalX/wiki/Granting-non-root-USB-device-access-(Linux)](https://github.com/LairdCP/UwTerminalX/wiki/Granting-non-root-USB-device-access-(Linux))
+3. Make the sub ports not require root: [https://github.com/LairdCP/UwTerminalX/wiki/Granting-non-root-USB-device-access-(Linux)](https://github.com/LairdCP/UwTerminalX/wiki/Granting-non-root-USB-device-access-(Linux))
+4. (Optional) Install the ZED camera software here: [https://www.stereolabs.com/developers/release/](https://www.stereolabs.com/developers/release/).
 
 ## Nodes
 * Camera Node
