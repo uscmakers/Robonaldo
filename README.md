@@ -21,6 +21,12 @@ sudo ln -s /usr/include/opencv4 /usr/include/opencv
 
 # Running ROS
 
+`cd` into repository and run:
+```
+caikin_make
+```
+
+
 In one Terminal window: `roscore`
 
 In other Terminal windows:
