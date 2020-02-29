@@ -2,6 +2,10 @@ import numpy as np
 import cv2
 import pyzed.sl as sl
 
+import rospy
+from std_msgs.msg import String
+
+
 def ballDetect(image, depth):
     #image = cv2.imread('soccer_pic/ball2.jpg')
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -20,7 +24,16 @@ def ballDetect(image, depth):
 #    print("min distance: " , temp.flatten()[np.argmin(temp.flatten())])
     return green
 
-    
+def visionProcessing():
+	pub = rospy.Publisher('ball_position', String)
+	rospy.init_node('vision_processing')
+	rate = rospy.Rate(10) #loops 10 times per second
+
+	while not rospy.is_shutdown():
+		# do stuff
+		
+
+
 
 
 #    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
