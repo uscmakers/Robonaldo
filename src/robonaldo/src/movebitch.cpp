@@ -11,6 +11,7 @@ int main(int argc, char **argv) {
 		geometry_msgs::Twist msg;
 		msg.linear.x = 1.0;
 		move_bitch_pub.publish(msg);
+		//break;
 	}
 
 	return 0;

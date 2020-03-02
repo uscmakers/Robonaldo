@@ -51,6 +51,21 @@ http://wiki.ros.org/rosserial_arduino/Tutorials/Blink
 Run `rosrun robonaldo talker` to simulate ROS broadcast
 
 
+# Running Gaze-bo
+
+Launch Gaze-bo
+```
+source devel/setup.bash
+roslaunch mybot_gazebo mybot_world.launch 
+```
+
+In another Terminal window
+```
+source devel/setup.bash
+rosrun robonaldo movebitch
+```
+
+
 # Other
 
 `rospack list`
