@@ -25,27 +25,27 @@ def ballDetect(image, depth):
     return green
 
 def visionProcessing():
-    # Retrieve left image in sl.Mat (which is the RGB camera values)
-    zed.retrieve_image(image_zed, sl.VIEW.LEFT)
+    # # Retrieve left image in sl.Mat (which is the RGB camera values)
+    # zed.retrieve_image(image_zed, sl.VIEW.LEFT)
 
-    # Retrieve depth map
-    zed.retrieve_measure(depth_zed, sl.MEASURE.DEPTH)
-    # Load depth data into a numpy array
-    depth_ocv = depth_zed.get_data()
+    # # Retrieve depth map
+    # zed.retrieve_measure(depth_zed, sl.MEASURE.DEPTH)
+    # # Load depth data into a numpy array
+    # depth_ocv = depth_zed.get_data()
 
-    # get_data() converts ZED object (Mat) to numpy array (for openCV)
-    image_ocv = image_zed.get_data()
-    green = ballDetect(image_ocv, depth_ocv)        
-    #note to self: pass image_ocv into ballDetect9()
-    # Display left image
-    cv2.imshow("Image", image_ocv)
-    cv2.imshow('depth', depth_ocv)
-    cv2.imshow('green', green)
-    cv2.waitKey(1)
+    # # get_data() converts ZED object (Mat) to numpy array (for openCV)
+    # image_ocv = image_zed.get_data()
+    # green = ballDetect(image_ocv, depth_ocv)        
+    # #note to self: pass image_ocv into ballDetect9()
+    # # Display left image
+    # cv2.imshow("Image", image_ocv)
+    # cv2.imshow('depth', depth_ocv)
+    # cv2.imshow('green', green)
+    # cv2.waitKey(1)
 
     # TODO: DO VISION PROCESSING THINGS
-    # RETURN IT
-
+    # RETURN a list of [angle, distance]
+    return [20, 388]
 
 #    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 #    cnts = imutils.grab_contours(cnts)
@@ -93,6 +93,7 @@ if __name__ == '__main__':
     		# publish values
     		msg = robonaldo.msg.ball_positions(angle=values[0], distance=values[1])
 
+    		print(values[0], values[1])
 			pub.publish(msg)
 			rate.sleep()
     except:
