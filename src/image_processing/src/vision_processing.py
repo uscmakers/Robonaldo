@@ -2,6 +2,10 @@ import numpy as np
 import cv2
 import pyzed.sl as sl
 
+import rospy
+from robonaldo.msg import ball_positions
+
+
 def ballDetect(image, depth):
     #image = cv2.imread('soccer_pic/ball2.jpg')
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -20,8 +24,28 @@ def ballDetect(image, depth):
 #    print("min distance: " , temp.flatten()[np.argmin(temp.flatten())])
     return green
 
-    
+def visionProcessing():
+    # # Retrieve left image in sl.Mat (which is the RGB camera values)
+    # zed.retrieve_image(image_zed, sl.VIEW.LEFT)
 
+    # # Retrieve depth map
+    # zed.retrieve_measure(depth_zed, sl.MEASURE.DEPTH)
+    # # Load depth data into a numpy array
+    # depth_ocv = depth_zed.get_data()
+
+    # # get_data() converts ZED object (Mat) to numpy array (for openCV)
+    # image_ocv = image_zed.get_data()
+    # green = ballDetect(image_ocv, depth_ocv)        
+    # #note to self: pass image_ocv into ballDetect9()
+    # # Display left image
+    # cv2.imshow("Image", image_ocv)
+    # cv2.imshow('depth', depth_ocv)
+    # cv2.imshow('green', green)
+    # cv2.waitKey(1)
+
+    # TODO: DO VISION PROCESSING THINGS
+    # RETURN a list of [angle, distance]
+    return [20, 388]
 
 #    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 #    cnts = imutils.grab_contours(cnts)
@@ -43,7 +67,6 @@ def ballDetect(image, depth):
 
 if __name__ == '__main__':
 
-
     zed = sl.Camera()
 
     # Create a InitParameters object and set configuration parameters
@@ -60,26 +83,21 @@ if __name__ == '__main__':
     image_zed = sl.Mat(zed.get_camera_information().camera_resolution.width, zed.get_camera_information().camera_resolution.height, sl.MAT_TYPE.U8_C4)
     depth_zed = sl.Mat(zed.get_camera_information().camera_resolution.width, zed.get_camera_information().camera_resolution.height, sl.MAT_TYPE.F32_C1)
 
+    pub = rospy.Publisher('ball_position', ball_positions)
+	rospy.init_node('vision_processing')
+	rate = rospy.Rate(10) #loops 10 times per second
 
-    # Video capturing
-    while zed.grab() == sl.ERROR_CODE.SUCCESS:
-        # Retrieve left image in sl.Mat (which is the RGB camera values)
-        zed.retrieve_image(image_zed, sl.VIEW.LEFT)
+    try:
+    	while (not rospy.is_shutdown()) and zed.grab() == sl.ERROR_CODE.SUCCESS:
+	    	values = visionProcessing()
+    		# publish values
+    		msg = robonaldo.msg.ball_positions(angle=values[0], distance=values[1])
 
-        # Retrieve depth map
-        zed.retrieve_measure(depth_zed, sl.MEASURE.DEPTH)
-        # Load depth data into a numpy array
-        depth_ocv = depth_zed.get_data()
-
-        # get_data() converts ZED object (Mat) to numpy array (for openCV)
-        image_ocv = image_zed.get_data()
-        green = ballDetect(image_ocv, depth_ocv)        
-        #note to self: pass image_ocv into ballDetect9()
-        # Display left image
-        cv2.imshow("Image", image_ocv)
-        cv2.imshow('depth', depth_ocv)
-        cv2.imshow('green', green)
-        cv2.waitKey(1)
+    		print(values[0], values[1])
+			pub.publish(msg)
+			rate.sleep()
+    except:
+    	pass
 
 
 
