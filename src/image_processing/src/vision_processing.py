@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import pyzed.sl as sl
+import math
 
 def ballDetect(image, depth):
     #image = cv2.imread('soccer_pic/ball2.jpg')
@@ -8,17 +9,36 @@ def ballDetect(image, depth):
     lower = np.array([36, 25, 25], dtype = "uint8")
     upper = np.array([70, 255, 255], dtype = "uint8")
     mask = cv2.inRange(hsv, lower, upper)
-    print(depth)
+
     imask = mask > 0
     #print(imask)
     green = np.zeros_like(image, np.uint8)
     green[imask] = image[imask]
+
+    contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cntsSorted = sorted(contours, key = cv2.contourArea, reverse=True)
+    cX = -1
+    cY = -1
+    for contour in cntsSorted:
+        peri = cv2.arcLength(contour, True)
+        approx = cv2.approxPolyDP(contour, 0.04*peri, True)
+        if len(approx) == 4 and cv2.contourArea(contour) > 200:
+            cv2.drawContours(green, [contour], 0, (0, 0, 255), 3)
+            M = cv2.moments(contour)
+            cX = int(M['m10']/M['m00'])
+            cY = int(M['m01']/M['m00'])
+            cv2.circle(green, (cX, cY), 7, (0, 0, 255), -1)
+            print('center: ({},{})'.format(cX,cY))
+            break
+            
+        
+
     
 #    temp = np.full(depth.shape, np.inf)
 #    temp[~imask] = depth[~imask]
 
-#    print("min distance: " , temp.flatten()[np.argmin(temp.flatten())])
-    return green
+#   print("min distance: " , temp.flatten()[np.argmin(temp.flatten())])
+    return green, cX, cY
 
     
 
@@ -73,7 +93,20 @@ if __name__ == '__main__':
 
         # get_data() converts ZED object (Mat) to numpy array (for openCV)
         image_ocv = image_zed.get_data()
-        green = ballDetect(image_ocv, depth_ocv)        
+        green, cX, cY = ballDetect(image_ocv, depth_ocv) 
+        
+        print('depth_ocv.shape: ', depth_ocv.shape)
+        print('depth at center: ', depth_ocv[cY][cX])        
+
+        #point cloud
+#        point_cloud = sl.Mat()
+#        zed.retrieve_measure(point_cloud, sl.MEASURE.XYZRGBA)
+
+#        err, point_cloud_value = point_cloud.get_value(cX, cY)
+
+#        distance = math.sqrt(point_cloud_value[0] * point_cloud_value[0] + point_cloud_value[1] * point_cloud_value[1]  + point_cloud_value[2] * point_cloud_value[2])
+#        print('distance: ', distance)
+        
         #note to self: pass image_ocv into ballDetect9()
         # Display left image
         cv2.imshow("Image", image_ocv)
