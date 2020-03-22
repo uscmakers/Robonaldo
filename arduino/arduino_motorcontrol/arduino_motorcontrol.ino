@@ -26,8 +26,7 @@ const int RMOTOR = 9;  //can be 9 or 4
 const float TCCR2B_FREQ = 245.10f;
 const float TCCR0B_FREQ = 244.14f;
 /*beam breaker*/
-const int BBPOUT=13; //might be unnecessary if 5V pin is open 
-const int BBPIN=4;
+const int BBPIN=50;
 /*encoders*/
 const int LEFT_ENCODER_A = 1; 
 const int LEFT_ENCODER_B = 5;
@@ -73,9 +72,8 @@ void setup() {
   pin_init();
   
   //break beam code
-  pinMode(BBPOUT, OUTPUT);
   pinMode(BBPIN, INPUT);
-  digitalWrite(BBPIN, HIGH);
+  digitalWrite(BBPIN, HIGH); // turn on the pullup
 
   //encoder code
   pinMode(LEFT_ENCODER_A, INPUT);
@@ -101,12 +99,12 @@ void loop(){
 
   n.spinOnce();
 
-  if(timer_reached1sec){  //stop robot if no messages received for 
+  if(timer_reached1sec){  //stop robot if no messages received recently
     setLeftMotorSpeed(0.0);
     setRightMotorSpeed(0.0);
   }
 
-  char beamState=!digitalRead(BBPIN);
+  char beamState = !digitalRead(BBPIN);
   beam_msg.beam_broken = beamState;
   beam_pub.publish(&beam_msg);
 
