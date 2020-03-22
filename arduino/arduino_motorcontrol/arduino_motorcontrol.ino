@@ -37,7 +37,6 @@ volatile unsigned char encoder_laststate, encoder_state;
 volatile int encoder_count=0;
 
 volatile unsigned char timer_reached1sec = 0;
-unsigned char lastState = 0;
 
 ros::NodeHandle n;
 
@@ -100,17 +99,16 @@ void loop(){
   //motor two is right
   //Testing motor with values of 1, 0, and -1.
 
+  n.spinOnce();
+
   if(timer_reached1sec){  //stop robot if no messages received for 
     setLeftMotorSpeed(0.0);
     setRightMotorSpeed(0.0);
   }
 
-  char beamState=digitalRead(BBPIN);
-  if (beamState != lastState) {
-    beam_msg.beam_broken = beamState;
-    beam_pub.publish(&beam_msg);
-  } 
-  lastState = beamState;   
+  char beamState=!digitalRead(BBPIN);
+  beam_msg.beam_broken = beamState;
+  beam_pub.publish(&beam_msg);
 
   encoder_changeState();
  
@@ -138,9 +136,9 @@ void loop(){
   imu_msg.gz = g.gyro.z;
   
   imu_pub.publish(&imu_msg);
-	  n.spinOnce();
-
+	
 }
+
 void pin_init(){
   TCCR2B = TCCR2B & B11111000 | B00000101; //pins 10 & 9
   //TCCR0B = TCCR0B & B11111000 | B00000100; //pins 13 & 4
