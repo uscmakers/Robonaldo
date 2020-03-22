@@ -10,14 +10,15 @@
 #include <Adafruit_LSM9DS1.h>
 #include <Adafruit_Sensor.h>
 
-/*imu*/
-Adafruit_LSM9DS1 lsm = Adafruit_LSM9DS1();
 
 #define LSM9DS1_SCK A5
 #define LSM9DS1_MISO 12
 #define LSM9DS1_MOSI A4
 #define LSM9DS1_XGCS 6
 #define LSM9DS1_MCS 5
+
+/*imu*/
+Adafruit_LSM9DS1 lsm = Adafruit_LSM9DS1();
 
 /*motors*/
 const int LMOTOR = 10;  //can be 10 or 13  Motor 1 = left, motor 2 = right
@@ -46,6 +47,7 @@ void messageCb(const robonaldo::motor_speeds& motor_speed_msg) {
   resetTimer();
   timer_reached1sec = 0;
 }
+
 void setupSensor()
 {
   //Set the accelerometer range
@@ -57,9 +59,13 @@ void setupSensor()
 }
 
 ros::Subscriber<robonaldo::motor_speeds> sub("motor_control", &messageCb);
-ros::Publisher beam_pub("beam_state", nullptr);
-ros::Publisher imu_pub("imu_values", nullptr);
-ros::Publisher encoder_pub("encoder_values", nullptr);
+
+robonaldo::imu_values imu_msg;
+robonaldo::encoder_values encoder_msg;
+robonaldo::beam_break beam_msg;
+ros::Publisher beam_pub("beam_state", &beam_msg);
+ros::Publisher imu_pub("imu_values", &imu_msg);
+ros::Publisher encoder_pub("encoder_values", &encoder_msg);
 
 void setup() {
   // motors
@@ -84,7 +90,7 @@ void setup() {
   init_timer();
   sei();
 	
-  //imu code
+  // imu code
   lsm.begin();
   setupSensor();
 }
@@ -93,7 +99,6 @@ void loop(){
   //motor one is left
   //motor two is right
   //Testing motor with values of 1, 0, and -1.
-  n.spinOnce();
 
   if(timer_reached1sec){  //stop robot if no messages received for 
     setLeftMotorSpeed(0.0);
@@ -102,15 +107,13 @@ void loop(){
 
   char beamState=digitalRead(BBPIN);
   if (beamState != lastState) {
-    robonaldo::beam_break beam_msg;
     beam_msg.beam_broken = beamState;
     beam_pub.publish(&beam_msg);
   } 
   lastState = beamState;   
 
   encoder_changeState();
-
-  robonaldo::encoder_values encoder_msg;				//encoder_values is the name of the 
+ 
   encoder_msg.left_count = encoder_count;			//encoder_counts is new
   encoder_pub.publish(&encoder_msg);					//encode_pub is the name of the 
 
@@ -121,8 +124,7 @@ void loop(){
   sensors_event_t a, m, g, temp;
 
   lsm.getEvent(&a, &m, &g, &temp); 
-
-  robonaldo::imu_values imu_msg;
+  
   imu_msg.ax = a.acceleration.x;
   imu_msg.ay = a.acceleration.y;
   imu_msg.az = a.acceleration.z;
@@ -136,7 +138,8 @@ void loop(){
   imu_msg.gz = g.gyro.z;
   
   imu_pub.publish(&imu_msg);
-	
+	  n.spinOnce();
+
 }
 void pin_init(){
   TCCR2B = TCCR2B & B11111000 | B00000101; //pins 10 & 9
