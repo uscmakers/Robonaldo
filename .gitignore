@@ -42,3 +42,6 @@ lib/
 msg_gen/
 srv_gen/
 devel/
+
+#Arduino
+*.arduino*
