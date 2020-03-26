@@ -1,6 +1,6 @@
 #include "ros/ros.h"
 #include "robonaldo/odometry.h"
-#include "robonaldo/encoder_data.h"
+#include "robonaldo/encoder_values.h"
 #include <sstream>
 
 float X = 0.0;
@@ -8,7 +8,7 @@ float Y = 0.0;
 float THETA = 0.0;
 float VELOCITY = 0.0;
 
-void odomCallback(const robonaldo::encoder_data::ConstPtr& msg) {
+void odomCallback(const robonaldo::encoder_values::ConstPtr& msg) {
   //ROS_INFO('ENCODER DATA: %f, %f, %f, %f', msg->left_count, msg->right_count,
           //msg->left_velocity, msg->right_velocity);
   X = msg->left_count * msg->left_velocity;
@@ -20,7 +20,7 @@ void odomCallback(const robonaldo::encoder_data::ConstPtr& msg) {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "odometry");
   ros::NodeHandle n;
-  ros::Subscriber encoder_sub = n.subscribe("encoder_data", 1000, odomCallback);
+  ros::Subscriber encoder_sub = n.subscribe("encoder_values", 1000, odomCallback);
   ros::Publisher odom_pub = n.advertise<robonaldo::odometry>("odometry", 1000);
   ros::Rate loop_rate(10);
   int count = 0;
