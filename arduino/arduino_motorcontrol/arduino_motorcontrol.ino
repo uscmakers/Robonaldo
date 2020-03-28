@@ -212,134 +212,78 @@ ISR(TIMER1_COMPA_vect){
 /*encoder interrupts*/
 ISR(INT2_vect) {	//right encoder pin b
 	unsigned char rightB = digitalRead(RIGHT_ENCODER_B);
-
-	if (encoder_laststate == 0) {
-		// Handle B input for state 0
-		if(rightB){	//CCW
-			encoder_state = 2;
-			encoder_count--;
-		}
+	if (encoder_laststate == 0 && rightB) {
+    encoder_state = 2;
+    encoder_count--;
 	}
-	else if (encoder_laststate == 1) {
-		// Handle B input for state 1
-    if(rightB){	//CW
-			encoder_state = 3;
-			encoder_count++;
-		}
+	else if (encoder_laststate == 1 && rightB) {
+    encoder_state = 3;
+    encoder_count++;
 	}
-	else if (encoder_laststate == 2) {
-		// Handle B input for state 2
-		if(!rightB){	//CW
-			encoder_state = 0; 
-			encoder_count++;
-		}
+	else if (encoder_laststate == 2 && !rightB) {
+    encoder_state = 0; 
+    encoder_count++;
 	}
-	else {   // encoder_laststate = 3
-		// Handle B input for state 3
-	  if(!rightB){	//CCW
-			encoder_state = 1;
-			encoder_count--;			
-		}
+	else if (!rightB) {   // encoder_laststate = 3
+    encoder_state = 1;
+    encoder_count--;			
 	}
-
 }
 ISR(INT3_vect){   //right encoder pin a
 	unsigned char rightA = digitalRead(RIGHT_ENCODER_A);
-
-	if (encoder_laststate == 0) {
-		// Handle A input for state 0
-		if(rightA){//CW
-			encoder_state = 1;
-			encoder_count++;
-		}
+	if (encoder_laststate == 0 && rightA) {
+    encoder_state = 1;
+    encoder_count++;
 	}
-	else if (encoder_laststate == 1) {
-		// Handle A input for state 1
-		if(!rightA){	//CCW
-			encoder_state = 0;
-			encoder_count--;
-		}
-
+	else if (encoder_laststate == 1 && !rightA) {
+    encoder_state = 0;
+    encoder_count--;
 	}
-	else if (encoder_laststate == 2) {
-		// Handle A input for state 2
-		if(rightA){	//CCW
-			encoder_state = 3;
-			encoder_count--;
-		}
+	else if (encoder_laststate == 2 && rightA) {
+    encoder_state = 3;
+    encoder_count--;
 	}
-	else {   // encoder_laststate = 3
-		// Handle A input for state 3
-		if(!rightA){	//CW
-			encoder_state = 2;
-			encoder_count++;
-		}
+	else if(!rightA){   // encoder_laststate = 3
+    encoder_state = 2;
+    encoder_count++;
 	}
 }
 
 ISR(INT4_vect) {	//left encoder pin a
 	unsigned char leftA = digitalRead(LEFT_ENCODER_A);
-
-	if (encoder_laststate == 0) {
-		// Handle A input for state 0
-		if(leftA){//CW
-			encoder_state = 1;
-			encoder_count++;
-		}
+	if (encoder_laststate == 0 && leftA) {
+    encoder_state = 1;
+    encoder_count++;
 	}
-	else if (encoder_laststate == 1) {
-		// Handle A input for state 1
-		if(!leftA){	//CCW
-			encoder_state = 0;
-			encoder_count--;
-		}
-
+	else if (encoder_laststate == 1 && !leftA) {
+    encoder_state = 0;
+    encoder_count--;
 	}
-	else if (encoder_laststate == 2) {
-		// Handle A input for state 2
-		if(leftA){	//CCW
-			encoder_state = 3;
-			encoder_count--;
-		}
+	else if (encoder_laststate == 2 && leftA) {
+    encoder_state = 3;
+    encoder_count--;
 	}
-	else {   // encoder_laststate = 3
-		// Handle A input for state 3
-		if(!leftA){	//CW
-			encoder_state = 2;
-			encoder_count++;
-		}
+	else if(!leftA){   // encoder_laststate = 3
+    encoder_state = 2;
+    encoder_count++;
 	}
 }
 ISR(INT5_vect){   //left encoder pin b
 	unsigned char leftB = digitalRead(LEFT_ENCODER_B);
-
-	if (encoder_laststate == 0) {
-		// Handle B input for state 0
-		if(leftB){	//CCW
-			encoder_state = 2;
-			encoder_count--;
-		}
+	if (encoder_laststate == 0 && leftB) {
+    encoder_state = 2;
+    encoder_count--;
 	}
-	else if (encoder_laststate == 1) {
-		// Handle B input for state 1
-    if(leftB){	//CW
-			encoder_state = 3;
-			encoder_count++;
-		}
+	else if (encoder_laststate == 1 && leftB) {
+    encoder_state = 3;
+    encoder_count++;
 	}
-	else if (encoder_laststate == 2) {
-		// Handle B input for state 2
-		if(!leftB){	//CW
-			encoder_state = 0; 
-			encoder_count++;
-		}
+	else if (encoder_laststate == 2 && !leftB) {
+    encoder_state = 0; 
+    encoder_count++;
 	}
-	else {   // encoder_laststate = 3
-		// Handle B input for state 3
-	  if(!leftB){	//CCW
-			encoder_state = 1;
-			encoder_count--;			
-		}
+	else if (!leftB) {   // encoder_laststate = 3
+    encoder_state = 1;
+    encoder_count--;			
 	}
-
 }
