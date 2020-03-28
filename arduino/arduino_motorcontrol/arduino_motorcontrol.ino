@@ -32,11 +32,13 @@ const int LEFT_ENCODER_A = 2;   //goes with ISR 4
 const int LEFT_ENCODER_B = 3;   //goes with ISR 5
 const int RIGHT_ENCODER_A = 18; //goes with ISR 3
 const int RIGHT_ENCODER_B = 19; //goes with ISR 2
-volatile unsigned char encoder_laststate, encoder_state;
-volatile int encoder_count=0;
+volatile unsigned char l_encoder_laststate, l_encoder_state;
+volatile unsigned char r_encoder_laststate, r_encoder_state;
+volatile int l_encoder_count=0;
+volatile int r_encoder_count=0;
 
 volatile unsigned char timer_reached1sec = 0;
-
+unsigned long initTime, deltaTime;
 ros::NodeHandle n;
 
 void messageCb(const robonaldo::motor_speeds& motor_speed_msg) {
@@ -96,7 +98,7 @@ void loop(){
   //motor one is left
   //motor two is right
   //Testing motor with values of 1, 0, and -1.
-
+  initTime = micros();
   n.spinOnce();
 
   if(timer_reached1sec){  //stop robot if no messages received recently
@@ -108,9 +110,15 @@ void loop(){
   beam_msg.beam_broken = beamState;
   beam_pub.publish(&beam_msg);
 
-  encoder_changeState();
- 
-  encoder_msg.left_count = encoder_count;			//encoder_counts is new
+  l_encoder_changeState();
+  r_encoder_changeState();
+  
+  deltaTime = micros() - initTime;
+  
+  l_encoder_count /= deltaTime;
+  r_encoder_count /= deltaTime;
+  encoder_msg.left_count = l_encoder_count;			//encoder_counts is new
+  encoder_msg.right_count = r_encoder_count;			//encoder_counts is new  
   encoder_pub.publish(&encoder_msg);					//encode_pub is the name of the 
 
   //imu stuff
@@ -184,24 +192,43 @@ void init_timer(){
   // enable timer compare interrupt
   TIMSK1 |= (1 << OCIE1A);
 }
-void encoder_changeState(){
+void l_encoder_changeState(){
 	unsigned int initA = digitalRead(LEFT_ENCODER_A);
 	unsigned int initB = digitalRead(LEFT_ENCODER_B);
   // encoder_changed = 0;
   if (!initB && !initA){
-    encoder_laststate = 0;
+    l_encoder_laststate = 0;
   }
   else if (!initB && initA){
-    encoder_laststate = 1;
+    l_encoder_laststate = 1;
   }
   else if (initB && !initA){
-    encoder_laststate = 2;
+    l_encoder_laststate = 2;
   }
   else{
-    encoder_laststate = 3;
+    l_encoder_laststate = 3;
   }
 
-  encoder_state = encoder_laststate;
+  l_encoder_state = l_encoder_laststate;
+}
+void r_encoder_changeState(){
+	unsigned int initA = digitalRead(RIGHT_ENCODER_A);
+	unsigned int initB = digitalRead(RIGHT_ENCODER_B);
+  // encoder_changed = 0;
+  if (!initB && !initA){
+    r_encoder_laststate = 0;
+  }
+  else if (!initB && initA){
+    r_encoder_laststate = 1;
+  }
+  else if (initB && !initA){
+    r_encoder_laststate = 2;
+  }
+  else{
+    r_encoder_laststate = 3;
+  }
+
+  r_encoder_state = r_encoder_laststate;
 }
 void resetTimer(){ //resets timer every time a message is received
     TCNT1 = 0;
@@ -213,77 +240,77 @@ ISR(TIMER1_COMPA_vect){
 ISR(INT2_vect) {	//right encoder pin b
 	unsigned char rightB = digitalRead(RIGHT_ENCODER_B);
 	if (encoder_laststate == 0 && rightB) {
-    encoder_state = 2;
-    encoder_count--;
+    r_encoder_state = 2;
+    r_encoder_count--;
 	}
 	else if (encoder_laststate == 1 && rightB) {
-    encoder_state = 3;
-    encoder_count++;
+    r_encoder_state = 3;
+    r_encoder_count++;
 	}
 	else if (encoder_laststate == 2 && !rightB) {
-    encoder_state = 0; 
-    encoder_count++;
+    r_encoder_state = 0; 
+    r_encoder_count++;
 	}
 	else if (!rightB) {   // encoder_laststate = 3
-    encoder_state = 1;
-    encoder_count--;			
+    r_encoder_state = 1;
+    r_encoder_count--;			
 	}
 }
 ISR(INT3_vect){   //right encoder pin a
 	unsigned char rightA = digitalRead(RIGHT_ENCODER_A);
 	if (encoder_laststate == 0 && rightA) {
-    encoder_state = 1;
-    encoder_count++;
+    r_encoder_state = 1;
+    r_encoder_count++;
 	}
 	else if (encoder_laststate == 1 && !rightA) {
-    encoder_state = 0;
-    encoder_count--;
+    r_encoder_state = 0;
+    r_encoder_count--;
 	}
 	else if (encoder_laststate == 2 && rightA) {
-    encoder_state = 3;
-    encoder_count--;
+    r_encoder_state = 3;
+    r_encoder_count--;
 	}
 	else if(!rightA){   // encoder_laststate = 3
-    encoder_state = 2;
-    encoder_count++;
+    r_encoder_state = 2;
+    r_encoder_count++;
 	}
 }
 
 ISR(INT4_vect) {	//left encoder pin a
 	unsigned char leftA = digitalRead(LEFT_ENCODER_A);
 	if (encoder_laststate == 0 && leftA) {
-    encoder_state = 1;
-    encoder_count++;
+    l_encoder_state = 1;
+    l_encoder_count++;
 	}
 	else if (encoder_laststate == 1 && !leftA) {
-    encoder_state = 0;
-    encoder_count--;
+    l_encoder_state = 0;
+    l_encoder_count--;
 	}
 	else if (encoder_laststate == 2 && leftA) {
-    encoder_state = 3;
-    encoder_count--;
+    l_encoder_state = 3;
+    l_encoder_count--;
 	}
 	else if(!leftA){   // encoder_laststate = 3
-    encoder_state = 2;
-    encoder_count++;
+    l_encoder_state = 2;
+    l_encoder_count++;
 	}
 }
 ISR(INT5_vect){   //left encoder pin b
 	unsigned char leftB = digitalRead(LEFT_ENCODER_B);
 	if (encoder_laststate == 0 && leftB) {
-    encoder_state = 2;
-    encoder_count--;
+    l_encoder_state = 2;
+    l_encoder_count--;
 	}
 	else if (encoder_laststate == 1 && leftB) {
-    encoder_state = 3;
-    encoder_count++;
+    l_encoder_state = 3;
+    l_encoder_count++;
 	}
 	else if (encoder_laststate == 2 && !leftB) {
-    encoder_state = 0; 
-    encoder_count++;
+    l_encoder_state = 0; 
+    l_encoder_count++;
 	}
 	else if (!leftB) {   // encoder_laststate = 3
-    encoder_state = 1;
-    encoder_count--;			
+    _encoder_state = 1;
+    l_encoder_count--;			
 	}
 }
