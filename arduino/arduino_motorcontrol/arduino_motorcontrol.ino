@@ -36,6 +36,7 @@ volatile unsigned char l_encoder_laststate, l_encoder_state;
 volatile unsigned char r_encoder_laststate, r_encoder_state;
 volatile int l_encoder_count=0;
 volatile int r_encoder_count=0;
+float l_velocity, r_velocity;
 
 volatile unsigned char timer_reached1sec = 0;
 unsigned long initTime, deltaTime;
@@ -115,10 +116,14 @@ void loop(){
   
   deltaTime = micros() - initTime;
   
-  l_encoder_count /= deltaTime;
-  r_encoder_count /= deltaTime;
-  encoder_msg.left_count = l_encoder_count;			//encoder_counts is new
-  encoder_msg.right_count = r_encoder_count;			//encoder_counts is new  
+  l_velocity = l_encoder_count / deltaTime;
+  r_velocity = r_encoder_count / deltaTime; 
+  
+  encoder_msg.left_count = l_encoder_count;			
+  encoder_msg.right_count = r_encoder_count;		
+  encoder_msg.left_velocity = l_velocity;   //encoder ticks per microsecond
+  encoder_msg.right_velocity = r_velocity;  //encoder ticks per microsecond
+
   encoder_pub.publish(&encoder_msg);					//encode_pub is the name of the 
 
   //imu stuff
