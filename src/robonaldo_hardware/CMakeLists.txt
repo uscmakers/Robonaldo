@@ -10,6 +10,8 @@ project(robonaldo_hardware)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  std_msgs
+  message_generation
   rosserial_arduino
 )
 
@@ -47,11 +49,10 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  imu_values.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -68,10 +69,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs  # Or other packages containing msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -204,3 +205,7 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+add_executable(fused_orientation src/fused_orientation.cpp)
+target_link_libraries(fused_orientation ${catkin_LIBRARIES})
+add_dependencies(fused_orientation robonaldo_hardware_generate_messages)
