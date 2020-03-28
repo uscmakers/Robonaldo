@@ -28,10 +28,10 @@ const float TCCR0B_FREQ = 244.14f;
 /*beam breaker*/
 const int BBPIN=50;
 /*encoders*/
-const int LEFT_ENCODER_A = 1; 
-const int LEFT_ENCODER_B = 5;
-const int RIGHT_ENCODER_A = 2; //not sure about RIGHT ENCODER pins
-const int RIGHT_ENCODER_B = 6; 
+const int LEFT_ENCODER_A = 2;   //goes with ISR 4
+const int LEFT_ENCODER_B = 3;   //goes with ISR 5
+const int RIGHT_ENCODER_A = 18; //goes with ISR 3
+const int RIGHT_ENCODER_B = 19; //goes with ISR 2
 volatile unsigned char encoder_laststate, encoder_state;
 volatile int encoder_count=0;
 
@@ -209,55 +209,53 @@ void resetTimer(){ //resets timer every time a message is received
 ISR(TIMER1_COMPA_vect){
   timer_reached1sec = 1;
 }
-/*encoder interrupt*/
-ISR(PCINT1_vect) {	//left encoder pin b
-	unsigned char a = digitalRead(LEFT_ENCODER_A);
-	unsigned char b = digitalRead(RIGHT_ENCODER_B);
+/*encoder interrupts*/
+ISR(INT2_vect) {	//right encoder pin b
+	unsigned char rightB = digitalRead(RIGHT_ENCODER_B);
 
 	if (encoder_laststate == 0) {
 		// Handle B input for state 0
-		if(b){	//CCW
+		if(rightB){	//CCW
 			encoder_state = 2;
 			encoder_count--;
 		}
 	}
 	else if (encoder_laststate == 1) {
 		// Handle B input for state 1
-    if(b){	//CW
+    if(rightB){	//CW
 			encoder_state = 3;
 			encoder_count++;
 		}
 	}
 	else if (encoder_laststate == 2) {
 		// Handle B input for state 2
-		if(!b){	//CW
+		if(!rightB){	//CW
 			encoder_state = 0; 
 			encoder_count++;
 		}
 	}
 	else {   // encoder_laststate = 3
 		// Handle B input for state 3
-	  if(!b){	//CCW
+	  if(!rightB){	//CCW
 			encoder_state = 1;
 			encoder_count--;			
 		}
 	}
 
 }
-ISR(PCINT2_vect){   //for checking left encoder pin A
-	unsigned char a = digitalRead(LEFT_ENCODER_A);
-	unsigned char b = digitalRead(RIGHT_ENCODER_B);
+ISR(INT3_vect){   //right encoder pin a
+	unsigned char rightA = digitalRead(RIGHT_ENCODER_A);
 
 	if (encoder_laststate == 0) {
 		// Handle A input for state 0
-		if(a){//CW
+		if(rightA){//CW
 			encoder_state = 1;
 			encoder_count++;
 		}
 	}
 	else if (encoder_laststate == 1) {
 		// Handle A input for state 1
-		if(!a){	//CCW
+		if(!rightA){	//CCW
 			encoder_state = 0;
 			encoder_count--;
 		}
@@ -265,16 +263,83 @@ ISR(PCINT2_vect){   //for checking left encoder pin A
 	}
 	else if (encoder_laststate == 2) {
 		// Handle A input for state 2
-		if(a){	//CCW
+		if(rightA){	//CCW
 			encoder_state = 3;
 			encoder_count--;
 		}
 	}
 	else {   // encoder_laststate = 3
 		// Handle A input for state 3
-		if(!a){	//CW
+		if(!rightA){	//CW
 			encoder_state = 2;
 			encoder_count++;
 		}
 	}
+}
+
+ISR(INT4_vect) {	//left encoder pin a
+	unsigned char leftA = digitalRead(LEFT_ENCODER_A);
+
+	if (encoder_laststate == 0) {
+		// Handle A input for state 0
+		if(leftA){//CW
+			encoder_state = 1;
+			encoder_count++;
+		}
+	}
+	else if (encoder_laststate == 1) {
+		// Handle A input for state 1
+		if(!leftA){	//CCW
+			encoder_state = 0;
+			encoder_count--;
+		}
+
+	}
+	else if (encoder_laststate == 2) {
+		// Handle A input for state 2
+		if(leftA){	//CCW
+			encoder_state = 3;
+			encoder_count--;
+		}
+	}
+	else {   // encoder_laststate = 3
+		// Handle A input for state 3
+		if(!leftA){	//CW
+			encoder_state = 2;
+			encoder_count++;
+		}
+	}
+}
+ISR(INT5_vect){   //left encoder pin b
+	unsigned char leftB = digitalRead(LEFT_ENCODER_B);
+
+	if (encoder_laststate == 0) {
+		// Handle B input for state 0
+		if(leftB){	//CCW
+			encoder_state = 2;
+			encoder_count--;
+		}
+	}
+	else if (encoder_laststate == 1) {
+		// Handle B input for state 1
+    if(leftB){	//CW
+			encoder_state = 3;
+			encoder_count++;
+		}
+	}
+	else if (encoder_laststate == 2) {
+		// Handle B input for state 2
+		if(!leftB){	//CW
+			encoder_state = 0; 
+			encoder_count++;
+		}
+	}
+	else {   // encoder_laststate = 3
+		// Handle B input for state 3
+	  if(!leftB){	//CCW
+			encoder_state = 1;
+			encoder_count--;			
+		}
+	}
+
 }
