@@ -38,8 +38,21 @@ volatile int l_encoder_count=0;
 volatile int r_encoder_count=0;
 float l_velocity, r_velocity;
 
+/*pid*/
+double kp = 1, kd = 1;
+double error, lastError, rateError;
+double input, output, setPoint;         
+
+// Converts -1, 1 motor speed to ticks/us
+// Max motor rpm = 5330
+// Max ticks/us = 1024
+// Microseconds/min = 60 * 10^6 = 60,000,000
+// Gear ratio of 12.75
+// Max motor speed in revolutions per microsecond = 5330 * 1024 / 60,000,000 / 12.75 = 0.0071345359
+const double conversionFactor = 0.00713
+
 volatile unsigned char timer_reached1sec = 0;
-unsigned long initTime, deltaTime;
+unsigned long previousTime, deltaTime;
 ros::NodeHandle n;
 
 void messageCb(const robonaldo::motor_speeds& motor_speed_msg) {
@@ -93,19 +106,23 @@ void setup() {
   // imu code
   lsm.begin();
   setupSensor();
+  
+  previousTime = micros();
 }
 
 void loop(){
   //motor one is left
   //motor two is right
   //Testing motor with values of 1, 0, and -1.
-  initTime = micros();
+  
   n.spinOnce();
-
+  unsigned long currentTime = micros();
+  
   if(timer_reached1sec){  //stop robot if no messages received recently
     setLeftMotorSpeed(0.0);
     setRightMotorSpeed(0.0);
   }
+
 
   char beamState = !digitalRead(BBPIN);
   beam_msg.beam_broken = beamState;
@@ -114,10 +131,22 @@ void loop(){
   l_encoder_changeState();
   r_encoder_changeState();
   
-  deltaTime = micros() - initTime;
+  deltaTime = currentTime - previousTime;
+  previousTime = currentTime;
   
   l_velocity = l_encoder_count / deltaTime;
   r_velocity = r_encoder_count / deltaTime; 
+
+  //PID stuff
+
+  L_motorSpeed *= conversionFactor;                            //convert L_motorspeed to ticks/us
+  double lPID = computePID(l_velocity, L_motorSpeed);           //l_velocity is in encoder ticks/us, and everything else (lpid, L_motorSpeed) is in motorSpeak (-1 to 1), conversion needed
+  setLeftMotorSpeed(lPID);
+
+  R_motorSpeed *= conversionFactor;
+  double rPID = computePID(r_velocity, R_motorSpeed);
+  setRightMotorSpeed(rPID);
+
   
   encoder_msg.left_count = l_encoder_count;			
   encoder_msg.right_count = r_encoder_count;		
@@ -179,10 +208,24 @@ void setMotorSpeed(int pin, float motorSpeed){ //pin: pin connected to motor, mo
 
 void setLeftMotorSpeed(float motorSpeed){
   setMotorSpeed(LMOTOR, motorSpeed);
+  
 }
 void setRightMotorSpeed(float motorSpeed){
   setMotorSpeed(RMOTOR, -1.0f*motorSpeed);
 }
+
+double computePID(double inp, double setPoint){     
+  
+        error = setPoint - inp;                                // determine error
+        rateError = (error - lastError)/deltaTime;        // compute derivative
+        
+        double out = kp*error + kd*rateError;                //PID output               
+        
+        lastError = error;                                //remember current error
+ 
+        return out;                                        //have function return the PID output
+}
+
 void init_timer(){
   //set timer1 interrupt at 1Hz
   TCCR1A = 0;// set entire TCCR1A register to 0
