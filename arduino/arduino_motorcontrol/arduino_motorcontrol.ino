@@ -36,12 +36,11 @@ volatile unsigned char l_encoder_laststate, l_encoder_state;
 volatile unsigned char r_encoder_laststate, r_encoder_state;
 volatile int l_encoder_count=0;
 volatile int r_encoder_count=0;
-float l_velocity, r_velocity;
+int l_last_count=0;
+int r_last_count=0;
 
 /*pid*/
-double kp = 1, kd = 1;
-double error, lastError, rateError;
-double input, output, setPoint;         
+float kp = 0.0f, kd = 0.0f, kf = 1.0f;  
 
 // Converts -1, 1 motor speed to ticks/us
 // Max motor rpm = 5330
@@ -49,15 +48,18 @@ double input, output, setPoint;
 // Microseconds/min = 60 * 10^6 = 60,000,000
 // Gear ratio of 12.75
 // Max motor speed in revolutions per microsecond = 5330 * 1024 / 60,000,000 / 12.75 = 0.0071345359
-const double conversionFactor = 0.00713
+const float conversionFactor = 0.00713f;
 
 volatile unsigned char timer_reached1sec = 0;
-unsigned long previousTime, deltaTime;
+unsigned long previousTime;
 ros::NodeHandle n;
 
+volatile float left_setpoint=0.0f;
+volatile float right_setpoint=0.0f;
+
 void messageCb(const robonaldo::motor_speeds& motor_speed_msg) {
-  setLeftMotorSpeed(motor_speed_msg.left_speed);
-  setRightMotorSpeed(motor_speed_msg.right_speed);
+  left_setpoint = motor_speed_msg.left_speed;
+  right_setpoint = motor_speed_msg.right_speed;
   resetTimer();
   timer_reached1sec = 0;
 }
@@ -106,9 +108,32 @@ void setup() {
   // imu code
   lsm.begin();
   setupSensor();
-  
+
+  l_encoder_initState();
+  r_encoder_initState();
   previousTime = micros();
 }
+
+struct PDFController{
+  
+  float previous_error = 0.0f;
+
+  float compute(float input, float setPoint, unsigned long deltaTime){     
+  
+    float error = setPoint - input;                                // determine error
+    float rateError = (error - previous_error)/deltaTime;        // compute derivative
+    
+    float out = kp*error + kd*rateError + kf*setPoint;                //PID output               
+    
+    previous_error = error;                                //remember current error
+  
+    return out;                                        //have function return the PID output
+  }
+  
+};
+
+PDFController left_controller;
+PDFController right_controller;
 
 void loop(){
   //motor one is left
@@ -123,30 +148,25 @@ void loop(){
     setRightMotorSpeed(0.0);
   }
 
-
   char beamState = !digitalRead(BBPIN);
   beam_msg.beam_broken = beamState;
   beam_pub.publish(&beam_msg);
-
-  l_encoder_changeState();
-  r_encoder_changeState();
   
-  deltaTime = currentTime - previousTime;
+  unsigned long deltaTime = currentTime - previousTime;
   previousTime = currentTime;
   
-  l_velocity = l_encoder_count / deltaTime;
-  r_velocity = r_encoder_count / deltaTime; 
+  float l_velocity = (float)(l_encoder_count - l_last_count) / deltaTime;
+  float r_velocity = (float)(r_encoder_count - r_last_count) / deltaTime; 
 
   //PID stuff
-
-  L_motorSpeed *= conversionFactor;                            //convert L_motorspeed to ticks/us
-  double lPID = computePID(l_velocity, L_motorSpeed);           //l_velocity is in encoder ticks/us, and everything else (lpid, L_motorSpeed) is in motorSpeak (-1 to 1), conversion needed
+  float lPID = left_controller.compute(l_velocity, left_setpoint * conversionFactor, deltaTime);           //l_velocity is in encoder ticks/us, and everything else (lpid, L_motorSpeed) is in motorSpeak (-1 to 1), conversion needed
   setLeftMotorSpeed(lPID);
 
-  R_motorSpeed *= conversionFactor;
-  double rPID = computePID(r_velocity, R_motorSpeed);
+  float rPID = right_controller.compute(r_velocity, right_setpoint * conversionFactor, deltaTime);
   setRightMotorSpeed(rPID);
 
+  l_last_count = l_encoder_count;
+  r_last_count = r_encoder_count;
   
   encoder_msg.left_count = l_encoder_count;			
   encoder_msg.right_count = r_encoder_count;		
@@ -214,18 +234,6 @@ void setRightMotorSpeed(float motorSpeed){
   setMotorSpeed(RMOTOR, -1.0f*motorSpeed);
 }
 
-double computePID(double inp, double setPoint){     
-  
-        error = setPoint - inp;                                // determine error
-        rateError = (error - lastError)/deltaTime;        // compute derivative
-        
-        double out = kp*error + kd*rateError;                //PID output               
-        
-        lastError = error;                                //remember current error
- 
-        return out;                                        //have function return the PID output
-}
-
 void init_timer(){
   //set timer1 interrupt at 1Hz
   TCCR1A = 0;// set entire TCCR1A register to 0
@@ -240,7 +248,13 @@ void init_timer(){
   // enable timer compare interrupt
   TIMSK1 |= (1 << OCIE1A);
 }
-void l_encoder_changeState(){
+void resetTimer(){ //resets timer every time a message is received
+    TCNT1 = 0;
+}
+ISR(TIMER1_COMPA_vect){
+  timer_reached1sec = 1;
+}
+void l_encoder_initState(){
 	unsigned int initA = digitalRead(LEFT_ENCODER_A);
 	unsigned int initB = digitalRead(LEFT_ENCODER_B);
   // encoder_changed = 0;
@@ -259,7 +273,7 @@ void l_encoder_changeState(){
 
   l_encoder_state = l_encoder_laststate;
 }
-void r_encoder_changeState(){
+void r_encoder_initState(){
 	unsigned int initA = digitalRead(RIGHT_ENCODER_A);
 	unsigned int initB = digitalRead(RIGHT_ENCODER_B);
   // encoder_changed = 0;
@@ -278,24 +292,18 @@ void r_encoder_changeState(){
 
   r_encoder_state = r_encoder_laststate;
 }
-void resetTimer(){ //resets timer every time a message is received
-    TCNT1 = 0;
-}
-ISR(TIMER1_COMPA_vect){
-  timer_reached1sec = 1;
-}
 /*encoder interrupts*/
 ISR(INT2_vect) {	//right encoder pin b
 	unsigned char rightB = digitalRead(RIGHT_ENCODER_B);
-	if (encoder_laststate == 0 && rightB) {
+	if (r_encoder_laststate == 0 && rightB) {
     r_encoder_state = 2;
     r_encoder_count--;
 	}
-	else if (encoder_laststate == 1 && rightB) {
+	else if (r_encoder_laststate == 1 && rightB) {
     r_encoder_state = 3;
     r_encoder_count++;
 	}
-	else if (encoder_laststate == 2 && !rightB) {
+	else if (r_encoder_laststate == 2 && !rightB) {
     r_encoder_state = 0; 
     r_encoder_count++;
 	}
@@ -306,15 +314,15 @@ ISR(INT2_vect) {	//right encoder pin b
 }
 ISR(INT3_vect){   //right encoder pin a
 	unsigned char rightA = digitalRead(RIGHT_ENCODER_A);
-	if (encoder_laststate == 0 && rightA) {
+	if (r_encoder_laststate == 0 && rightA) {
     r_encoder_state = 1;
     r_encoder_count++;
 	}
-	else if (encoder_laststate == 1 && !rightA) {
+	else if (r_encoder_laststate == 1 && !rightA) {
     r_encoder_state = 0;
     r_encoder_count--;
 	}
-	else if (encoder_laststate == 2 && rightA) {
+	else if (r_encoder_laststate == 2 && rightA) {
     r_encoder_state = 3;
     r_encoder_count--;
 	}
@@ -326,15 +334,15 @@ ISR(INT3_vect){   //right encoder pin a
 
 ISR(INT4_vect) {	//left encoder pin a
 	unsigned char leftA = digitalRead(LEFT_ENCODER_A);
-	if (encoder_laststate == 0 && leftA) {
+	if (l_encoder_laststate == 0 && leftA) {
     l_encoder_state = 1;
     l_encoder_count++;
 	}
-	else if (encoder_laststate == 1 && !leftA) {
+	else if (l_encoder_laststate == 1 && !leftA) {
     l_encoder_state = 0;
     l_encoder_count--;
 	}
-	else if (encoder_laststate == 2 && leftA) {
+	else if (l_encoder_laststate == 2 && leftA) {
     l_encoder_state = 3;
     l_encoder_count--;
 	}
@@ -345,20 +353,20 @@ ISR(INT4_vect) {	//left encoder pin a
 }
 ISR(INT5_vect){   //left encoder pin b
 	unsigned char leftB = digitalRead(LEFT_ENCODER_B);
-	if (encoder_laststate == 0 && leftB) {
+	if (l_encoder_laststate == 0 && leftB) {
     l_encoder_state = 2;
     l_encoder_count--;
 	}
-	else if (encoder_laststate == 1 && leftB) {
+	else if (l_encoder_laststate == 1 && leftB) {
     l_encoder_state = 3;
     l_encoder_count++;
 	}
-	else if (encoder_laststate == 2 && !leftB) {
+	else if (l_encoder_laststate == 2 && !leftB) {
     l_encoder_state = 0; 
     l_encoder_count++;
 	}
 	else if (!leftB) {   // encoder_laststate = 3
-    _encoder_state = 1;
+    l_encoder_state = 1;
     l_encoder_count--;			
 	}
 }
