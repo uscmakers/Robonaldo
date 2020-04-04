@@ -11,7 +11,7 @@ float rollRad=0;
 void userInputCallback(const robonaldo_hardware::imu_values::ConstPtr& msg){
 	ROS_INFO("ax: %d ay: %d az: %d mx: %d my: %d mz: %d gx: %d gy: %d gz: %d", msg->ax, msg->ay, msg->az, msg->mx, msg->my, msg->mz, msg->gx, msg->gy, msg->gz);
 	int axRaw = msg->ax, ayRaw = msg->ay, azRaw = msg->az; // 3-axis raw acceleration
-	int gxraw=msg->gx, gyRaw = msg->gy, gzRaw = msg->gz; // 3-axis raw angular velocity
+	int gxRaw=msg->gx, gyRaw = msg->gy, gzRaw = msg->gz; // 3-axis raw angular velocity
 	int mxRaw = msg->mx, myRaw = imsg->my, mzRaw = msg->mz;
 	
 //convert velocity from degrees per second to radians per second 
