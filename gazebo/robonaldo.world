@@ -17,7 +17,8 @@
       </include>
 
       <!-- Attach the plugin to this model -->
-      <plugin name="robonaldo_control" filename="librobonaldo_plugin.so"/>
+      <plugin name="robonaldo_control" filename="build/librobonaldo_plugin.so"/>
+
     </model>
 
   </world>
