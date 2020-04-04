@@ -225,10 +225,6 @@ add_executable(desktop src/desktop.cpp)
 target_link_libraries(desktop ${catkin_LIBRARIES})
 add_dependencies(desktop robonaldo_generate_messages)
 
-add_executable(odometry src/odometry.cpp)
-target_link_libraries(odometry ${catkin_LIBRARIES})
-add_dependencies(odometry robonaldo_generate_messages)
-
 add_executable(vision src/vision.cpp)
 target_link_libraries(vision ${catkin_LIBRARIES})
 add_dependencies(vision robonaldo_generate_messages)

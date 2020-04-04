@@ -210,3 +210,7 @@ include_directories(
 add_executable(fused_orientation src/fused_orientation.cpp lib/MadgwickAHRS.cpp)
 target_link_libraries(fused_orientation ${catkin_LIBRARIES})
 add_dependencies(fused_orientation robonaldo_hardware_generate_messages)
+
+add_executable(odometry src/odometry.cpp)
+target_link_libraries(odometry ${catkin_LIBRARIES})
+add_dependencies(odometry robonaldo_generate_messages)
