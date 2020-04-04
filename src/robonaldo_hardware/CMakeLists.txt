@@ -119,6 +119,7 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  lib/MadgwickAHRS/src
 )
 
 ## Declare a C++ library
@@ -206,6 +207,6 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_executable(fused_orientation src/fused_orientation.cpp)
+add_executable(fused_orientation src/fused_orientation.cpp lib/MadgwickAHRS/src/MadgwickAHRS.cpp)
 target_link_libraries(fused_orientation ${catkin_LIBRARIES})
 add_dependencies(fused_orientation robonaldo_hardware_generate_messages)
