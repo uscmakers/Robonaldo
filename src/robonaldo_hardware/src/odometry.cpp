@@ -2,19 +2,39 @@
 #include "robonaldo/odometry.h"
 #include "robonaldo/encoder_values.h"
 #include <sstream>
+#include <math.h>
+
+//Robot width: 11", Wheel radius: 4"
+//convert 11 inches to encoder ticks:
+//11 *()
+const float ROBOT_WIDTH = 11 ; //NEED TO CHANGE 
+const float inches_per_tick = 0.0245f; // 8*3.14 / 1024 = 0.0245 (circumference over # of ticks per rotation)
 
 float X = 0.0;
 float Y = 0.0;
 float THETA = 0.0;
 float VELOCITY = 0.0;
+float ANGULAR_VEL = 0.0;
+float last_left_count = 0.0;
+float last_right_count = 0.0;
 
 void odomCallback(const robonaldo::encoder_values::ConstPtr& msg) {
-  //ROS_INFO('ENCODER DATA: %f, %f, %f, %f', msg->left_count, msg->right_count,
-          //msg->left_velocity, msg->right_velocity);
-  X = msg->left_count * msg->left_velocity;
-  Y = msg->right_count * msg->right_velocity;
-  THETA = msg->left_count * msg->left_velocity - msg->right_count * msg->right_velocity;
-  VELOCITY = (msg->left_velocity + msg->right_velocity) / 2;
+  //convert msg data (left and right count) to inches with inches_per_tick
+  float delta_left_count = (msg->left_count  - last_left_count) * inches_per_tick;
+  float delta_right_count = (msg->right_count - last_right_count) * inches_per_tick;
+
+  float delta_dist = (delta_left_count + delta_right_count) / 2.0f;
+  float delta_theta = (delta_right_count - delta_left_count)/ROBOT_WIDTH;
+
+  VELOCITY = (msg->left_velocity + msg->right_velocity)*(inches_per_tick) / 2.0f;
+
+  X += ( delta_dist * cos(delta_theta) );
+  Y += ( delta_dist * sin(delta_theta) );
+
+  THETA += delta_theta;
+  last_left_count = msg->left_count;
+  last_right_count = msg->right_count;
+  
 }
 
 int main(int argc, char **argv) {
