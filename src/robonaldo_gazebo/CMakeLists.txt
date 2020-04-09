@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(robonaldo_gazebo)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+#add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -16,6 +16,11 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
+# Depend on system install of Gazebo
+find_package(gazebo REQUIRED)
+
+#warning: variable CMAKE_CXX_FLAGS is modified
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -68,11 +73,11 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  robonaldo_msgs
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+#   robonaldo_msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -119,6 +124,7 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  ${GAZEBO_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -207,12 +213,7 @@ include_directories(
 # catkin_add_nosetests(test)
 
 # Find Gazebo
-find_package(gazebo REQUIRED)
-include_directories(${GAZEBO_INCLUDE_DIRS})
 link_directories(${GAZEBO_LIBRARY_DIRS})
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
-
-message("My message")
 
 # Build our plugin
 add_library(robonaldo_plugin SHARED src/robonaldo_plugin.cpp)
@@ -223,5 +224,3 @@ install(TARGETS robonaldo_plugin
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-
-message(${CATKIN_PACKAGE_SHARE_DESTINATION})

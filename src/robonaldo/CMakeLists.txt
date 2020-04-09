@@ -111,7 +111,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES robonaldo
-#  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime
+  CATKIN_DEPENDS roscpp rospy std_msgs ros_launch
 #  DEPENDS system_lib
 )
 
@@ -214,22 +214,15 @@ include_directories(
 
 add_executable(decider src/decider.cpp)
 target_link_libraries(decider ${catkin_LIBRARIES})
-add_dependencies(decider robonaldo_generate_messages)
 
 add_executable(desktop src/desktop.cpp)
 target_link_libraries(desktop ${catkin_LIBRARIES})
-add_dependencies(desktop robonaldo_generate_messages)
 
 add_executable(vision src/vision.cpp)
 target_link_libraries(vision ${catkin_LIBRARIES})
-add_dependencies(vision robonaldo_generate_messages)
 
 add_executable(camera src/camera.cpp)
 target_link_libraries(camera ${catkin_LIBRARIES})
-add_dependencies(camera robonaldo_generate_messages)
-
-add_executable(movebitch src/movebitch.cpp)
-target_link_libraries(movebitch ${catkin_LIBRARIES})
 
 find_package(OpenCV)
 include_directories(${OpenCV_INCLUDE_DIRS})
