@@ -109,7 +109,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES robonaldo_msgs
-#  CATKIN_DEPENDS message_generation
+  CATKIN_DEPENDS message_generation message_runtime
 #  DEPENDS system_lib
 )
 

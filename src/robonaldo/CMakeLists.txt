@@ -214,15 +214,19 @@ include_directories(
 
 add_executable(decider src/decider.cpp)
 target_link_libraries(decider ${catkin_LIBRARIES})
+add_dependencies(decider ${catkin_EXPORTED_TARGETS})
 
 add_executable(desktop src/desktop.cpp)
 target_link_libraries(desktop ${catkin_LIBRARIES})
+add_dependencies(desktop ${catkin_EXPORTED_TARGETS})
 
 add_executable(vision src/vision.cpp)
 target_link_libraries(vision ${catkin_LIBRARIES})
+add_dependencies(vision ${catkin_EXPORTED_TARGETS})
 
 add_executable(camera src/camera.cpp)
 target_link_libraries(camera ${catkin_LIBRARIES})
+add_dependencies(camera ${catkin_EXPORTED_TARGETS})
 
 find_package(OpenCV)
 include_directories(${OpenCV_INCLUDE_DIRS})

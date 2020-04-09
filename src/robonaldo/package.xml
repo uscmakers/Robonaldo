@@ -56,6 +56,7 @@
   <build_depend>cv_bridge</build_depend>
   <build_depend>python-numpy</build_depend>
   <build_depend>roslaunch</build_depend>
+  <build_depend>robonaldo_msgs</build_depend>
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
