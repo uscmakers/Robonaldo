@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(robonaldo_hardware)
+project(robonaldo_msgs)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -8,11 +8,7 @@ project(robonaldo_hardware)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rospy
-  std_msgs
-  rosserial_arduino
-  robonaldo_msgs
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -49,9 +45,17 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-# )
+add_message_files(
+  FILES
+  ball_positions.msg
+  beam_break.msg
+  encoder_values.msg
+  imu_values.msg
+  keyboard_input.msg
+  motor_speeds.msg
+  odometry.msg
+  orientation.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -70,7 +74,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  robonaldo_msgs
+  #std_msgs  # Or other packages containing msgs
 )
 
 ################################################
@@ -104,8 +108,8 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES robonaldo_hardware
-#  CATKIN_DEPENDS roscpp rospy rosserial_arduino
+#  LIBRARIES robonaldo_msgs
+#  CATKIN_DEPENDS message_generation
 #  DEPENDS system_lib
 )
 
@@ -118,12 +122,11 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
-  lib/
 )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/robonaldo_hardware.cpp
+#   src/${PROJECT_NAME}/robonaldo_msgs.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -134,7 +137,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/robonaldo_hardware_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/robonaldo_msgs_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -198,16 +201,10 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_robonaldo_hardware.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_robonaldo_msgs.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-
-add_executable(fused_orientation src/fused_orientation.cpp lib/MadgwickAHRS.cpp)
-target_link_libraries(fused_orientation ${catkin_LIBRARIES})
-
-add_executable(odometry src/odometry.cpp)
-target_link_libraries(odometry ${catkin_LIBRARIES})

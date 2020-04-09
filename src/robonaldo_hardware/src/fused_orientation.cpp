@@ -1,6 +1,6 @@
 #include "ros/ros.h"
-#include "robonaldo_hardware/imu_values.h"
-#include "robonaldo/orientation.h"
+#include "robonaldo_msgs/imu_values.h"
+#include "robonaldo_msgs/orientation.h"
 #include "MadgwickAHRS.h"
 
 //am I allowed to make global variables? we will see 
@@ -12,7 +12,7 @@ const float dps_to_rad=.0174533;
 
 Madgwick filter;
 
-void userInputCallback(const robonaldo_hardware::imu_values::ConstPtr& msg){
+void userInputCallback(const robonaldo_msgs::imu_values::ConstPtr& msg){
 	ROS_INFO("ax: %d ay: %d az: %d mx: %d my: %d mz: %d gx: %d gy: %d gz: %d", msg->ax, msg->ay, msg->az, msg->mx, msg->my, msg->mz, msg->gx, msg->gy, msg->gz);
 	float axRaw = msg->ax, ayRaw = msg->ay, azRaw = msg->az; // 3-axis raw acceleration
 	float gxRaw = msg->gx, gyRaw = msg->gy, gzRaw = msg->gz; // 3-axis raw angular velocity
@@ -34,14 +34,14 @@ void userInputCallback(const robonaldo_hardware::imu_values::ConstPtr& msg){
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "fused_orientation");
 	ros::NodeHandle n;
-	ros::Publisher orientation_pub = n.advertise<robonaldo::orientation>("orientation", 1000);
+	ros::Publisher orientation_pub = n.advertise<robonaldo_msgs::orientation>("orientation", 1000);
 	ros::Subscriber sub = n.subscribe("imu_values", 1000, userInputCallback);
 	ros::Rate loop_rate(10);
 	
 	while (ros::ok()) {
 
 //the 57 number is the number to convert radians to degrees i think 
-		robonaldo::orientation msg;
+		robonaldo_msgs::orientation msg;
 		msg.yaw = filter.getYaw();
 		msg.pitch = filter.getPitch();
 		msg.roll = filter.getRoll();

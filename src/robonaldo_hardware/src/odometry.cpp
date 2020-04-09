@@ -1,6 +1,6 @@
 #include "ros/ros.h"
-#include "robonaldo/odometry.h"
-#include "robonaldo/encoder_values.h"
+#include "robonaldo_msgs/odometry.h"
+#include "robonaldo_msgs/encoder_values.h"
 #include <sstream>
 #include <math.h>
 
@@ -18,7 +18,7 @@ float ANGULAR_VEL = 0.0;
 float last_left_count = 0.0;
 float last_right_count = 0.0;
 
-void odomCallback(const robonaldo::encoder_values::ConstPtr& msg) {
+void odomCallback(const robonaldo_msgs::encoder_values::ConstPtr& msg) {
   //convert msg data (left and right count) to inches with inches_per_tick
   float delta_left_count = (msg->left_count  - last_left_count) * inches_per_tick;
   float delta_right_count = (msg->right_count - last_right_count) * inches_per_tick;
@@ -43,12 +43,12 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "odometry");
   ros::NodeHandle n;
   ros::Subscriber encoder_sub = n.subscribe("encoder_values", 1000, odomCallback);
-  ros::Publisher odom_pub = n.advertise<robonaldo::odometry>("odometry", 1000);
+  ros::Publisher odom_pub = n.advertise<robonaldo_msgs::odometry>("odometry", 1000);
   ros::Rate loop_rate(10);
 
 	while (ros::ok()) {
 		// This is a message object. stuff it with data and publish it
-		robonaldo::odometry msg;
+		robonaldo_msgs::odometry msg;
 		msg.x = X;
 		msg.y = Y;
     msg.theta = THETA;

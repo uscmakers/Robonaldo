@@ -1,6 +1,6 @@
 #include <SDL2/SDL.h>
 #include "ros/ros.h"
-#include "robonaldo/keyboard_input.h"
+#include "robonaldo_msgs/keyboard_input.h"
 #include <sstream>
 #include <termios.h>
 #include <stdio.h>
@@ -49,7 +49,7 @@ void shutDownSDL(){
 }
 
 /* Get user input and set msg accordingly, using WASD */
-void getInput(robonaldo::keyboard_input& msg) {
+void getInput(robonaldo_msgs::keyboard_input& msg) {
   
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -81,11 +81,11 @@ int main(int argc, char **argv) {
 
     ros::init(argc, argv, "desktop");
     ros::NodeHandle n;
-    ros::Publisher user_input_pub = n.advertise<robonaldo::keyboard_input>("user_input", 1000);
+    ros::Publisher user_input_pub = n.advertise<robonaldo_msgs::keyboard_input>("user_input", 1000);
     ros::Rate loop_rate(60);
 
     while (ros::ok() && windowOpen) {
-        robonaldo::keyboard_input msg;
+        robonaldo_msgs::keyboard_input msg;
 
         getInput(msg);
 
@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
     }
 
     if(ros::ok()){
-        robonaldo::keyboard_input msg;
+        robonaldo_msgs::keyboard_input msg;
         msg.up = false;
         msg.down = false;
         msg.left = false;

@@ -1,6 +1,6 @@
 #include "ros/ros.h"
-#include "robonaldo/keyboard_input.h"
-#include "robonaldo/motor_speeds.h"
+#include "robonaldo_msgs/keyboard_input.h"
+#include "robonaldo_msgs/motor_speeds.h"
 
 const float MAX_RIGHT_SPEED = 1.0f;
 const float MIN_RIGHT_SPEED = 1.0f;
@@ -9,11 +9,11 @@ const float MIN_LEFT_SPEED = 1.0f;
 
 const float KEYBOARD_SPEED = 0.25f;
 
-robonaldo::motor_speeds motor_speeds_msg;
+robonaldo_msgs::motor_speeds motor_speeds_msg;
 
-void userInputCallback(const robonaldo::keyboard_input::ConstPtr& msg){
+void userInputCallback(const robonaldo_msgs::keyboard_input::ConstPtr& msg){
 
-	ROS_INFO("Recieved %u %u %u %u", msg->up, msg->down, msg->left, msg->right);
+	//ROS_INFO("Recieved %u %u %u %u", msg->up, msg->down, msg->left, msg->right);
 
 	motor_speeds_msg.left_speed = 0.0f;
 	motor_speeds_msg.right_speed = 0.0f;
@@ -43,7 +43,7 @@ void userInputCallback(const robonaldo::keyboard_input::ConstPtr& msg){
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "decider");
 	ros::NodeHandle n;
-	ros::Publisher motor_control_pub = n.advertise<robonaldo::motor_speeds>("motor_control", 1000);
+	ros::Publisher motor_control_pub = n.advertise<robonaldo_msgs::motor_speeds>("motor_control", 1000);
 	ros::Subscriber sub = n.subscribe("user_input", 1000, userInputCallback);
 	ros::Rate loop_rate(60);
 
@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
 	while (ros::ok()) {
 		// This is a message object. stuff it with data and publish it
 
-		ROS_INFO("Sending %f %f", motor_speeds_msg.left_speed, motor_speeds_msg.right_speed);
+		//ROS_INFO("Sending %f %f", motor_speeds_msg.left_speed, motor_speeds_msg.right_speed);
 
 		motor_control_pub.publish(motor_speeds_msg);
 
