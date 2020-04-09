@@ -4,7 +4,7 @@ import pyzed.sl as sl
 import math
 
 import rospy
-from robonaldo.msg import ball_positions
+from robonaldo_msgs.msg import ball_positions
 
 
 def ballDetect(image, depth):
@@ -101,7 +101,7 @@ if __name__ == '__main__':
         print('depth_ocv.shape: ', depth_ocv.shape)
         print('depth at center: ', depth_ocv[cY][cX])        
 
-	msg = robonaldo.msg.ball_positions(angle=cX, distance=cY)
+        msg = ball_positions(angle=cX, distance=cY)
         pub.publish(msg)
         rate.sleep()
 
