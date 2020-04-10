@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+PKG = 'robonaldo_vision'
+import roslib; roslib.load_manifest(PKG)
+
 import numpy as np
 import cv2
 import pyzed.sl as sl

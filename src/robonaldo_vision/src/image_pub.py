@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-PKG = 'image_processing'
+PKG = 'robonaldo_vision'
 import roslib; roslib.load_manifest(PKG)
 import cv2
 import sys
