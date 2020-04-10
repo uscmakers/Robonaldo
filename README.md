@@ -1,14 +1,21 @@
 # Robonaldo
 
 ## Installation
-1. Install ros melodic with these instructions: [http://wiki.ros.org/melodic/Installation/Ubuntu](http://wiki.ros.org/melodic/Installation/Ubuntu)
-2. Install the remaining dependencies by running:
+
+To build everything other than robonaldo_vision just run:
 ```
-sudo apt-get install libsdl2-dev ros-melodic-rosserial-arduino ros-melodic-rosserial
+sudo ./install.sh
+```
+Restart the terminal for the changes to take effect. This should let you run catkin_make with no problems.
+
+### Camera Installation
+
+1. If this is on a Jetson with Jetpack 4.3 that was freshly installed, run
+```
 sudo ln -s /usr/include/opencv4 /usr/include/opencv
 ```
+2. Install the ZED camera software here: [https://www.stereolabs.com/developers/release/](https://www.stereolabs.com/developers/release/).
 3. Make the sub ports not require root: [https://github.com/LairdCP/UwTerminalX/wiki/Granting-non-root-USB-device-access-(Linux)](https://github.com/LairdCP/UwTerminalX/wiki/Granting-non-root-USB-device-access-(Linux))
-4. (Optional) Install the ZED camera software here: [https://www.stereolabs.com/developers/release/](https://www.stereolabs.com/developers/release/).
 
 ## Nodes
 * Camera Node
