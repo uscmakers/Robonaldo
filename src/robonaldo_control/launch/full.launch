@@ -1,0 +1,3 @@
+<launch>
+	<node pkg="robonaldo_control" type="decider" name="decider"/>
+</launch>

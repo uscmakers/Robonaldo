@@ -1,0 +1,4 @@
+<launch>
+	<include file="$(find robonaldo_control)/launch/full.launch" />
+	<include file="$(find robonaldo_control)/launch/desktop.launch" />
+</launch>

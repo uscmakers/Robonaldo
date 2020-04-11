@@ -1,4 +1,0 @@
-<launch>
-	<include file="$(find robonaldo)/launch/full.launch" />
-	<include file="$(find robonaldo)/launch/hardware.launch" />
-</launch>
