@@ -16,8 +16,8 @@ def ballDetect(image, depth):
     #image = cv2.imread('soccer_pic/ball2.jpg')
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     # Colors are in bgr
-    lower = np.array([36, 25, 100], dtype = "uint8")
-    upper = np.array([70, 255, 220], dtype = "uint8")
+    lower = np.array([36, 127, 40], dtype = "uint8")
+    upper = np.array([70, 255,200], dtype = "uint8")
     mask = cv2.inRange(hsv, lower, upper)
 
     imask = mask > 0
@@ -29,6 +29,16 @@ def ballDetect(image, depth):
     cntsSorted = sorted(contours, key = cv2.contourArea, reverse=True)
     cX = -1
     cY = -1
+
+    if len(cntsSorted) > 0:
+        cv2.drawContours(green, [cntsSorted[0]], 0, (0, 0, 255), 3)
+        M = cv2.moments(cntsSorted[0])
+        cX = int(M['m10']/M['m00'])
+        cY = int(M['m01']/M['m00'])
+        cv2.circle(green, (cX, cY), 7, (255, 0, 0), -1)
+        print('center: ({},{})'.format(cX,cY))
+
+    """
     for contour in cntsSorted:
         peri = cv2.arcLength(contour, True)
         approx = cv2.approxPolyDP(contour, 0.04*peri, True)
@@ -40,7 +50,7 @@ def ballDetect(image, depth):
             cv2.circle(green, (cX, cY), 7, (255, 0, 0), -1)
             print('center: ({},{})'.format(cX,cY))
             break
-            
+    """
     return green, cX, cY  
 
 
