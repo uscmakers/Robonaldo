@@ -4,6 +4,9 @@ project(robonaldo_gazebo)
 ## Compile as C++11, supported in ROS Kinetic and newer
 #add_compile_options(-std=c++11)
 
+cmake_policy(SET CMP0054 OLD)
+cmake_policy(SET CMP0045 OLD)
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
