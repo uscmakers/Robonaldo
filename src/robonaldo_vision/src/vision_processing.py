@@ -6,6 +6,7 @@ import numpy as np
 import cv2
 import pyzed.sl as sl
 import math
+import queue
 
 import rospy
 from robonaldo_msgs.msg import ball_positions
@@ -14,8 +15,9 @@ from robonaldo_msgs.msg import ball_positions
 def ballDetect(image, depth):
     #image = cv2.imread('soccer_pic/ball2.jpg')
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    lower = np.array([36, 25, 25], dtype = "uint8")
-    upper = np.array([70, 255, 255], dtype = "uint8")
+    # Colors are in bgr
+    lower = np.array([36, 25, 100], dtype = "uint8")
+    upper = np.array([70, 255, 220], dtype = "uint8")
     mask = cv2.inRange(hsv, lower, upper)
 
     imask = mask > 0
@@ -30,42 +32,22 @@ def ballDetect(image, depth):
     for contour in cntsSorted:
         peri = cv2.arcLength(contour, True)
         approx = cv2.approxPolyDP(contour, 0.04*peri, True)
-        if len(approx) == 4 and cv2.contourArea(contour) > 200:
+        if (len(approx) > 8 or len(approx) < 3) and cv2.contourArea(contour) > 200:
             cv2.drawContours(green, [contour], 0, (0, 0, 255), 3)
             M = cv2.moments(contour)
             cX = int(M['m10']/M['m00'])
             cY = int(M['m01']/M['m00'])
-            cv2.circle(green, (cX, cY), 7, (0, 0, 255), -1)
+            cv2.circle(green, (cX, cY), 7, (255, 0, 0), -1)
             print('center: ({},{})'.format(cX,cY))
             break
             
-        
+    return green, cX, cY  
 
+
+def bfs(self, cX, cY):
+    q = queue.Queue(maxSize=30)
     
-#    temp = np.full(depth.shape, np.inf)
-#    temp[~imask] = depth[~imask]
-
-#   print("min distance: " , temp.flatten()[np.argmin(temp.flatten())])
-    return green, cX, cY
-
-#    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-#    cnts = imutils.grab_contours(cnts)
-#    center = None
-#    
-#    if len(cnts > 0:
-#        c = max(cnts, key = cv2.contourArea)
-#        ((x, y), radius) = cv2.minEnclosingCircle(c)
-#        M = cv2.moments(c)
-#        center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-
-#        if radius > 10:
-#            cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 255), 2)
-#            cv2.circle(frame, center, 5, (0, 0, 255), -1)
-
-
-    #cv2.imwrite('curr.png', green)
-
-
+    
 if __name__ == '__main__':
 
     zed = sl.Camera()
