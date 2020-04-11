@@ -51,12 +51,20 @@ def ballDetect(image, depth):
             print('center: ({},{})'.format(cX,cY))
             break
     """
+
+    cX, cY = find_valid_center(cX, cY)
+
     return green, cX, cY  
 
 
-def bfs(self, cX, cY):
-    q = queue.Queue(maxSize=30)
+def find_valid_center(cX, cY):
+    new_cX = -1
+    new_cY = -1
+
+    q = queue.Queue()
     
+    return new_cX, new_cY
+
     
 if __name__ == '__main__':
 
