@@ -57,13 +57,47 @@ def ballDetect(image, depth):
     return green, cX, cY  
 
 
-def find_valid_center(cX, cY):
+def find_valid_center(cX, cY,depth):
     new_cX = -1
     new_cY = -1
 
     q = queue.Queue()
-    
+    visited = []
+
+    q.put((cX, cY))
+    visited.append((cX, cY))
+    while not q.empty():
+    	coord_X, coord_Y = q.get()
+
+    	if not math.isnan(depth[coord_X][coord_Y])
+    		new_cX = coord_X
+    		new_cY = coord_Y
+    		break
+
+    	# Check neighbors of that coordinate
+    	if coord_X - 1 >= 0:
+    		if (coord_X - 1, coord_Y) not in visited:
+    			q.put((coord_X - 1, coord_Y))
+    			visited.append((coord_X-1, coord_Y))
+
+    	if coord_X + 1 < len(depth):
+    		if (coord_X + 1, coord_Y) not in visited:
+    			q.put((coord_X + 1, coord_Y))
+    			visited.append((coord_X + 1, coord_Y))
+
+    	if coord_Y - 1 >= 0:
+    		if (coord_X, coord_Y - 1) not in visited:
+    			q.put((coord_X, coord_Y - 1))
+    			visited.append((coord_X, coord_Y - 1))
+
+    	if coord_Y + 1 < len(depth[0])
+    		if (coord_X, coord_Y + 1) not in visited:
+    			q.put((coord_X, coord_Y + 1))
+    			visited.append((coord_X, coord_Y + 1))
+
+
     return new_cX, new_cY
+
 
     
 if __name__ == '__main__':
