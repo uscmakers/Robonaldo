@@ -1,6 +1,8 @@
 #ifndef _ROBONALDO_PLUGIN_HH_
 #define _ROBONALDO_PLUGIN_HH_
+#define _USE_MATH_DEFINES
 
+#include <cmath>
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/transport/transport.hh>
@@ -12,6 +14,8 @@
 #include "ros/subscribe_options.h"
 #include "std_msgs/Float32.h"
 #include "robonaldo_msgs/motor_speeds.h"
+
+const float max_speed = (5330.0f/12.75f) * (M_PI*0.2017776f) / 60.0f; //units: m/s 5330 is max speed of motor in rpm, div by 12.75 rot per sec
 
 namespace gazebo
 {
@@ -45,8 +49,8 @@ namespace gazebo
 
       // Get the first joint. We are making an assumption about the model
       // having one joint that is the rotational joint.
-      this->joint0 = _model->GetJoints()[0];
-      this->joint1 = _model->GetJoints()[1];
+      this->left_wheel = _model->GetJoints()[0];
+      this->right_wheel = _model->GetJoints()[1];
 
       // Add another joint
 
@@ -55,17 +59,17 @@ namespace gazebo
 
       // Apply the P-controller to the joint.
       this->model->GetJointController()->SetVelocityPID(
-          this->joint0->GetScopedName(), this->pid);
+          this->left_wheel->GetScopedName(), this->pid);
 
       this->model->GetJointController()->SetVelocityPID(
-          this->joint1->GetScopedName(), this->pid);
+          this->right_wheel->GetScopedName(), this->pid);
 
       // Set the joint's target velocity. This target velocity is just
       // for demonstration purposes.
       this->model->GetJointController()->SetVelocityTarget(
-          this->joint0->GetScopedName(), 0.0);
+          this->left_wheel->GetScopedName(), 0.0);
       this->model->GetJointController()->SetVelocityTarget(
-          this->joint1->GetScopedName(), 0.0);
+          this->right_wheel->GetScopedName(), 0.0);
 
       // Initialize ros, if it has not already bee initialized.
       if (!ros::isInitialized())
@@ -100,10 +104,10 @@ namespace gazebo
     {
       // Set the joint's target velocity.
       this->model->GetJointController()->SetVelocityTarget(
-          this->joint0->GetScopedName(), left_vel);
+          this->left_wheel->GetScopedName(), left_vel);
       // Set the joint's target velocity.
       this->model->GetJointController()->SetVelocityTarget(
-          this->joint1->GetScopedName(), right_vel);
+          this->right_wheel->GetScopedName(), right_vel);
     }
 
     /// \brief Handle an incoming message from ROS
@@ -111,7 +115,7 @@ namespace gazebo
     /// of the Velodyne.
     public: void OnRosMsg(const robonaldo_msgs::motor_speeds::ConstPtr &_msg)
     {
-      this->SetVelocity(_msg->left_speed, _msg->right_speed);
+      this->SetVelocity( max_speed * _msg->left_speed, max_speed * _msg->right_speed);
     }
 
     /// \brief ROS helper function that processes messages
@@ -128,8 +132,8 @@ namespace gazebo
     private: physics::ModelPtr model;
 
     /// \brief Pointer to the joint.
-    private: physics::JointPtr joint0;
-    private: physics::JointPtr joint1;
+    private: physics::JointPtr left_wheel;
+    private: physics::JointPtr right_wheel;
 
     /// \brief A PID controller for the joint.
     private: common::PID pid;
