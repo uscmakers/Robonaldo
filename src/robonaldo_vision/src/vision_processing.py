@@ -125,7 +125,8 @@ if __name__ == '__main__':
         depth, dX, dY, ball_depth = findDepth(ball_contour, depth_ocv)
         
         #print('depth_ocv.shape: ', depth_ocv.shape)
-        #print('depth at center: ', depth_ocv[dY][dX])        
+        #print('depth at center: ', depth_ocv[cY][cX])
+        #print('fixed depth at center: ', depth_ocv[dY][dX])        
 
         msg = ball_positions(angle=cX, distance=cY)
         pub.publish(msg)
@@ -140,6 +141,7 @@ if __name__ == '__main__':
 #        distance = math.sqrt(point_cloud_value[0] * point_cloud_value[0] + point_cloud_value[1] * point_cloud_value[1]  + point_cloud_value[2] * point_cloud_value[2])
 #        print('distance: ', distance)
         
+        ball_depth[ball_depth==float_max] = 0
         ball_depth = cv2.cvtColor(ball_depth, cv2.COLOR_GRAY2BGR)
 
         cv2.circle(green, (cX, cY), 5, (255, 0, 0), -1)
