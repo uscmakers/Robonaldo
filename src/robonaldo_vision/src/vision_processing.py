@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 PKG = 'robonaldo_vision'
 import roslib; roslib.load_manifest(PKG)
 
@@ -34,11 +34,13 @@ def ballDetect(image):
     ball_contour = None
 
     if len(cntsSorted) > 0 and cv2.contourArea(cntsSorted[0]) > 50:
-        cv2.drawContours(green, [cntsSorted[0]], 0, (0, 0, 255), 3)
-        M = cv2.moments(cntsSorted[0])
+
+        ball_contour = cntsSorted[0]
+
+        cv2.drawContours(green, [ball_contour], 0, (0, 0, 255), 3)
+        M = cv2.moments(ball_contour)
         cX = int(M['m10']/M['m00'])
         cY = int(M['m01']/M['m00'])
-        ball_contour = cntsSorted[0]
 
     """
     for contour in cntsSorted:
@@ -84,6 +86,9 @@ if __name__ == '__main__':
     init_params = sl.InitParameters()
     init_params.depth_mode = sl.DEPTH_MODE.PERFORMANCE  # Use PERFORMANCE depth mode
     init_params.coordinate_units = sl.UNIT.MILLIMETER  # Use milliliter units (for depth measurements)
+    init_params.camera_fps = 60
+    init_params.camera_resolution = sl.RESOLUTION.VGA
+    init_params.depth_minimum_distance = 300
 
     # Open the camera
     err = zed.open(init_params)
@@ -124,7 +129,7 @@ if __name__ == '__main__':
 
         msg = ball_positions(angle=cX, distance=cY)
         pub.publish(msg)
-        rate.sleep()
+        #rate.sleep()
 
         #point cloud
 #        point_cloud = sl.Mat()
