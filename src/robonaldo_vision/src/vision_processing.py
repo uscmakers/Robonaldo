@@ -1,7 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 PKG = 'robonaldo_vision'
 import roslib; roslib.load_manifest(PKG)
 
+import time
 import numpy as np
 import cv2
 import pyzed.sl as sl
@@ -11,17 +12,17 @@ import queue
 import rospy
 from robonaldo_msgs.msg import ball_positions
 
+float_max = np.finfo(np.float32).max
 
-def ballDetect(image, depth):
+def ballDetect(image):
     #image = cv2.imread('soccer_pic/ball2.jpg')
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     # Colors are in bgr
-    lower = np.array([36, 127, 40], dtype = "uint8")
-    upper = np.array([70, 255,200], dtype = "uint8")
+    lower = np.array([35, 110, 40], dtype = "uint8")
+    upper = np.array([90, 255,200], dtype = "uint8")
     mask = cv2.inRange(hsv, lower, upper)
 
     imask = mask > 0
-    #print(imask)
     green = np.zeros_like(image, np.uint8)
     green[imask] = image[imask]
 
@@ -30,13 +31,16 @@ def ballDetect(image, depth):
     cX = -1
     cY = -1
 
-    if len(cntsSorted) > 0:
-        cv2.drawContours(green, [cntsSorted[0]], 0, (0, 0, 255), 3)
-        M = cv2.moments(cntsSorted[0])
+    ball_contour = None
+
+    if len(cntsSorted) > 0 and cv2.contourArea(cntsSorted[0]) > 50:
+
+        ball_contour = cntsSorted[0]
+
+        cv2.drawContours(green, [ball_contour], 0, (0, 0, 255), 3)
+        M = cv2.moments(ball_contour)
         cX = int(M['m10']/M['m00'])
         cY = int(M['m01']/M['m00'])
-        cv2.circle(green, (cX, cY), 7, (255, 0, 0), -1)
-        print('center: ({},{})'.format(cX,cY))
 
     """
     for contour in cntsSorted:
@@ -51,12 +55,28 @@ def ballDetect(image, depth):
             print('center: ({},{})'.format(cX,cY))
             break
     """
-    return green, cX, cY  
 
+    #print('center: ({},{})'.format(cX,cY))
 
-def bfs(self, cX, cY):
-    q = queue.Queue(maxSize=30)
-    
+    return green, cX, cY, ball_contour  
+
+def findDepth(ball_contour, depth_map):
+    dY, dX, depth = -1, -1, -1
+    masked_depth = np.full(depth_map.shape, np.nan, dtype=np.float32)
+
+    if ball_contour is not None:
+        mask = np.zeros(depth_map.shape, np.uint8)
+        cv2.drawContours(mask, [ball_contour], -1, (255), -1)
+        imask = mask > 0.0
+
+        masked_depth[imask] = depth_map[imask]
+        masked_depth = np.nan_to_num(masked_depth, nan=float_max, posinf=float_max, neginf=float_max)
+
+        dY, dX = np.unravel_index(masked_depth.argmin(axis=None), masked_depth.shape)
+        depth = depth_map[dY, dX]
+
+    return depth, dX, dY, masked_depth
+
     
 if __name__ == '__main__':
 
@@ -66,6 +86,9 @@ if __name__ == '__main__':
     init_params = sl.InitParameters()
     init_params.depth_mode = sl.DEPTH_MODE.PERFORMANCE  # Use PERFORMANCE depth mode
     init_params.coordinate_units = sl.UNIT.MILLIMETER  # Use milliliter units (for depth measurements)
+    init_params.camera_fps = 60
+    init_params.camera_resolution = sl.RESOLUTION.VGA
+    init_params.depth_minimum_distance = 300
 
     # Open the camera
     err = zed.open(init_params)
@@ -78,10 +101,16 @@ if __name__ == '__main__':
 
     pub = rospy.Publisher('ball_position', ball_positions)
     rospy.init_node('vision_processing')
-    rate = rospy.Rate(10) #loops 10 times per second
+    rate = rospy.Rate(60) #loops 10 times per second
+
+    timer_frames = 5
+
+    timer_count = timer_frames
+    start_time = time.time()
 
     # Video capturing
     while (not rospy.is_shutdown()) and zed.grab() == sl.ERROR_CODE.SUCCESS:
+
         # Retrieve left image in sl.Mat (which is the RGB camera values)
         zed.retrieve_image(image_zed, sl.VIEW.LEFT)
 
@@ -92,14 +121,16 @@ if __name__ == '__main__':
 
         # get_data() converts ZED object (Mat) to numpy array (for openCV)
         image_ocv = image_zed.get_data()
-        green, cX, cY = ballDetect(image_ocv, depth_ocv) 
+        green, cX, cY, ball_contour = ballDetect(image_ocv)
+        depth, dX, dY, ball_depth = findDepth(ball_contour, depth_ocv)
         
-        print('depth_ocv.shape: ', depth_ocv.shape)
-        print('depth at center: ', depth_ocv[cY][cX])        
+        #print('depth_ocv.shape: ', depth_ocv.shape)
+        #print('depth at center: ', depth_ocv[cY][cX])
+        #print('fixed depth at center: ', depth_ocv[dY][dX])        
 
         msg = ball_positions(angle=cX, distance=cY)
         pub.publish(msg)
-        rate.sleep()
+        #rate.sleep()
 
         #point cloud
 #        point_cloud = sl.Mat()
@@ -110,12 +141,26 @@ if __name__ == '__main__':
 #        distance = math.sqrt(point_cloud_value[0] * point_cloud_value[0] + point_cloud_value[1] * point_cloud_value[1]  + point_cloud_value[2] * point_cloud_value[2])
 #        print('distance: ', distance)
         
+        ball_depth[ball_depth==float_max] = 0
+        ball_depth = cv2.cvtColor(ball_depth, cv2.COLOR_GRAY2BGR)
+
+        cv2.circle(green, (cX, cY), 5, (255, 0, 0), -1)
+        cv2.circle(ball_depth, (dX, dY), 5, (0, 0, 255), -1)
+
         #note to self: pass image_ocv into ballDetect9()
         # Display left image
         cv2.imshow("Image", image_ocv)
         cv2.imshow('depth', depth_ocv)
+        cv2.imshow('masked depth', ball_depth)
         cv2.imshow('green', green)
         cv2.waitKey(1)
+
+        timer_count -= 1
+        if timer_count == 0:
+            end_time = time.time()
+            print("FPS:", int(timer_frames/(end_time - start_time)))
+            timer_count = timer_frames
+            start_time = end_time
 
 
 
