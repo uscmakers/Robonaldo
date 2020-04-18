@@ -5,6 +5,7 @@
 #include <cmath>
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
+#include <gazebo/sensors/SensorTypes.hh>
 #include <gazebo/transport/transport.hh>
 #include <gazebo/msgs/msgs.hh>
 
@@ -54,10 +55,9 @@ namespace gazebo
       /** use same names as imu and magnetometer names in model.sdf file
        * this->imu = _model->getbyname("imu") ... same thing for magnetometer
        */
+      // Get the imu and sensor data from model
       // this->imu = _model->GetByName("imu");
-      // this->magnetometer
-
-      
+      // this->magnetometer = _model->GetByName("magnetometer");      
 
       // Add another joint
 
@@ -142,6 +142,9 @@ namespace gazebo
     /// \brief Pointer to the joint.
     private: physics::JointPtr left_wheel;
     private: physics::JointPtr right_wheel;
+
+    private: sensors::ImuSensorPtr imu;
+    private: sensors::SensorPtr magnetometer;
 
     /// \brief A PID controller for the joint.
     private: common::PID pid;
