@@ -56,6 +56,11 @@ namespace gazebo
        * this->imu = _model->getbyname("imu") ... same thing for magnetometer
        */
       // Get the imu and sensor data from model
+
+      //we are stoopid and can't figure out how to set the left side (a sensor) to the right side (a physics)
+      //they are different types 
+      //it is a perpetual state of confusion and suffering that we endure
+      //i didn't even know there could be differentkinds of pointers 
       // this->imu = _model->GetByName("imu");
       // this->magnetometer = _model->GetByName("magnetometer");      
 
