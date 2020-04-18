@@ -61,7 +61,7 @@ namespace gazebo
       //they are different types 
       //it is a perpetual state of confusion and suffering that we endure
       //i didn't even know there could be differentkinds of pointers 
-      // this->imu = _model->GetByName("imu");
+      // this->imu = _model->GetByName("imu"); //physics;:baseptr
       // this->magnetometer = _model->GetByName("magnetometer");      
 
       // Add another joint
