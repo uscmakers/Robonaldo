@@ -1,8 +1,9 @@
 <?xml version='1.0'?>
-<sdf version='1.4'>
+<sdf version='1.5'>
   <model name="robonaldo">
     <static>false</static>
     <link name="chassis"> 
+      
       <pose>0 0 .09886 0 0 0</pose>
       <!--inertial>
         <mass>23</mass>
@@ -61,7 +62,28 @@
           </soft_contact>
         </surface-->
       </visual>
-
+      <!--Add imu and magnetometer code here-->
+      <sensor type="imu" name="imu">
+        <imu>
+          <linear_acceleration>
+            <x></x>
+            <y></y>
+            <z></z>  
+          </linear_acceleration>
+          <angular_velocity>
+            <x></x>
+            <y></y>
+            <z></z>  
+          </angular_velocity>
+        </imu>      
+      </sensor>
+      <sensor type="magnetometer" name="magnetometer">
+        <magnetometer>
+          <x></x>
+          <y></y>
+          <z></z>
+        </magnetometer>
+      </sensor>
     </link>
 
     <link name="left_wheel">

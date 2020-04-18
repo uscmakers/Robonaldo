@@ -220,7 +220,7 @@ include_directories(
 link_directories(${GAZEBO_LIBRARY_DIRS})
 
 # Build our plugin
-add_library(robonaldo_plugin SHARED src/robonaldo_plugin.cpp)
+add_library(robonaldo_plugin SHARED src/robonaldo_plugin.cpp src/robonaldo_imu_plugin.cpp)
 target_link_libraries(robonaldo_plugin ${GAZEBO_LIBRARIES} ${roscpp_LIBRARIES})
 add_dependencies(robonaldo_plugin ${catkin_EXPORTED_TARGETS})
 

@@ -51,6 +51,13 @@ namespace gazebo
       // having one joint that is the rotational joint.
       this->left_wheel = _model->GetJoints()[0];
       this->right_wheel = _model->GetJoints()[1];
+      /** use same names as imu and magnetometer names in model.sdf file
+       * this->imu = _model->getbyname("imu") ... same thing for magnetometer
+       */
+      // this->imu = _model->GetByName("imu");
+      // this->magnetometer
+
+      
 
       // Add another joint
 
@@ -63,6 +70,7 @@ namespace gazebo
 
       this->model->GetJointController()->SetVelocityPID(
           this->right_wheel->GetScopedName(), this->pid);
+      
 
       // Set the joint's target velocity. This target velocity is just
       // for demonstration purposes.
@@ -127,7 +135,7 @@ namespace gazebo
         this->rosQueue.callAvailable(ros::WallDuration(timeout));
       }
     }
-
+    
     /// \brief Pointer to the model.
     private: physics::ModelPtr model;
 
