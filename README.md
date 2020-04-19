@@ -30,7 +30,7 @@ sudo ln -s /usr/include/opencv4 /usr/include/opencv
 
 `cd` into repository and run:
 ```
-caikin_make
+catkin_make
 ```
 
 
@@ -42,6 +42,13 @@ In other Terminal windows:
 source devel/setup.bash 
 rosrun robonaldo <node_name>
 ```
+
+For example, run `roscore` on one terminal, and in another terminal run:
+```
+source devel/setup.bash 
+rosrun robonaldo vision_processing.py
+```
+(under the `/robonaldo_vision` directory)
 
 # Running on Arduino
 
