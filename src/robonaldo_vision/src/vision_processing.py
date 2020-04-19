@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-#PKG = 'robonaldo_vision'
-#import roslib; roslib.load_manifest(PKG)
+PKG = 'robonaldo_vision'
+import roslib; roslib.load_manifest(PKG)
 
 import time
 import numpy as np
@@ -9,8 +9,8 @@ import pyzed.sl as sl
 import math
 import queue
 
-#import rospy
-#from robonaldo_msgs.msg import ball_positions
+import rospy
+from robonaldo_msgs.msg import ball_positions
 
 float_max = np.finfo(np.float32).max
 
@@ -106,9 +106,9 @@ if __name__ == '__main__':
     depth_zed = sl.Mat(zed.get_camera_information().camera_resolution.width, zed.get_camera_information().camera_resolution.height, sl.MAT_TYPE.F32_C1)
     image_depth_zed = sl.Mat(zed.get_camera_information().camera_resolution.width, zed.get_camera_information().camera_resolution.height, sl.MAT_TYPE.U8_C4)
 
-    #pub = rospy.Publisher('ball_position', ball_positions)
-    #rospy.init_node('vision_processing')
-    #rate = rospy.Rate(60) #loops 10 times per second
+    pub = rospy.Publisher('ball_position', ball_positions)
+    rospy.init_node('vision_processing')
+    rate = rospy.Rate(60) #loops 10 times per second
 
     timer_frames = 5
 
@@ -116,8 +116,7 @@ if __name__ == '__main__':
     start_time = time.time()
 
     # Video capturing
-    #while (not rospy.is_shutdown()) and zed.grab() == sl.ERROR_CODE.SUCCESS:
-    while zed.grab() == sl.ERROR_CODE.SUCCESS:
+    while (not rospy.is_shutdown()) and zed.grab() == sl.ERROR_CODE.SUCCESS:
 
         # Retrieve left image in sl.Mat (which is the RGB camera values)
         zed.retrieve_image(image_zed, sl.VIEW.LEFT)
@@ -159,9 +158,9 @@ if __name__ == '__main__':
         #ball_depth[ball_depth==float_max] = 0
         #ball_depth = cv2.cvtColor(ball_depth, cv2.COLOR_GRAY2BGR)
 
-        #msg = ball_positions(angle=angle_degree, distance=distance)
-        #pub.publish(msg)
-        #rate.sleep()
+        msg = ball_positions(angle=angle_degree, distance=distance)
+        pub.publish(msg)
+        rate.sleep()
 
         cv2.circle(green, (cX, cY), 5, (255, 0, 0), -1)
         cv2.circle(ball_depth, (dX, dY), 5, (0, 0, 255), -1)
