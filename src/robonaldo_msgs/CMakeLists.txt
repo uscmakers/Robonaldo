@@ -53,7 +53,6 @@ add_message_files(
   imu_values.msg
   keyboard_input.msg
   motor_speeds.msg
-  odometry.msg
   orientation.msg
 )
 

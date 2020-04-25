@@ -19,16 +19,16 @@ void userInputCallback(const robonaldo_msgs::imu_values::ConstPtr& msg){
 	float mxRaw = msg->mx, myRaw = msg->my, mzRaw = msg->mz;
 	
 //convert velocity from degrees per second to radians per second 
-	float gxRads=gxRaw*dps_to_rad;
-	float gyRads=gyRaw*dps_to_rad;
-	float gzRads=gzRaw*dps_to_rad;
+	float gxRads = gxRaw*dps_to_rad;
+	float gyRads = gyRaw*dps_to_rad;
+	float gzRads = gzRaw*dps_to_rad;
 
-        //update function to implement the sensor fusion algorithm 
+    //update function to implement the sensor fusion algorithm 
 
-        filter.update(
-                   axRaw, ayRaw, azRaw, 
-                   gxRads, gyRads, gzRads, 
-                   mxRaw, myRaw, mzRaw);
+    filter.update(
+               axRaw, ayRaw, azRaw, 
+               gxRads, gyRads, gzRads, 
+               mxRaw, myRaw, mzRaw);
 }
 
 int main(int argc, char **argv) {
