@@ -6,6 +6,8 @@
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/sensors/SensorTypes.hh>
+#include <gazebo/sensors/SensorManager.hh>
+#include "gazebo/sensors/ImuSensor.hh" //yeet
 #include <gazebo/transport/transport.hh>
 #include <gazebo/msgs/msgs.hh>
 
@@ -15,6 +17,8 @@
 #include "ros/subscribe_options.h"
 #include "std_msgs/Float32.h"
 #include "robonaldo_msgs/motor_speeds.h"
+#include <memory>
+#include "robonaldo_imu_plugin.cpp"
 
 const float max_speed = (5330.0f/12.75f) * (M_PI*0.2017776f) / 60.0f; //units: m/s 5330 is max speed of motor in rpm, div by 12.75 rot per sec
 
@@ -34,6 +38,7 @@ namespace gazebo
 
     public: virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
     {
+
       // Just output a message for now
       std::cerr << "\nThe robonaldo plugin is attached to model[" <<
         _model->GetName() << "]\n";
@@ -52,18 +57,15 @@ namespace gazebo
       // having one joint that is the rotational joint.
       this->left_wheel = _model->GetJoints()[0];
       this->right_wheel = _model->GetJoints()[1];
-      /** use same names as imu and magnetometer names in model.sdf file
-       * this->imu = _model->getbyname("imu") ... same thing for magnetometer
-       */
-      // Get the imu and sensor data from model
 
-      //we are stoopid and can't figure out how to set the left side (a sensor) to the right side (a physics)
-      //they are different types 
-      //it is a perpetual state of confusion and suffering that we endure
-      //i didn't even know there could be differentkinds of pointers 
-      // this->imu = _model->GetByName("imu"); //physics;:baseptr
-      // this->magnetometer = _model->GetByName("magnetometer");      
-
+      // Use same names as imu and magnetometer names in model.sdf file to get the imu and sensor data from model
+      sensors::SensorManager *pMgr = sensors::SensorManager::Instance() ;
+      this->imu = std::dynamic_pointer_cast<sensors::ImuSensor>(pMgr->GetSensor("imu"));
+      this->magnetometer = pMgr->GetSensor("magnetometer");      
+      
+      // SensorPlugin for updating and publishing sensor data
+      RobonaldoSensors sensorsPlugin;
+      sensorsPlugin.Load(this->magnetometer, this->imu, _sdf); 
       // Add another joint
 
       // Setup a P-controller, with a gain of 0.1.
