@@ -34,5 +34,7 @@
         <uri>model://fence</uri>
       </include>
     </model>
+
+    <plugin name="robonaldo_world" filename="librobonaldo_world_plugin.so"/>
   </world>
 </sdf>
