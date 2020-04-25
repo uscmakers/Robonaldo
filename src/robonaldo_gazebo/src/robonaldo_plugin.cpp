@@ -91,13 +91,13 @@ namespace gazebo
       {
         int argc = 0;
         char **argv = NULL;
-        ros::init(argc, argv, "gazebo_client",
+        ros::init(argc, argv, "robonaldo_gazebo",
             ros::init_options::NoSigintHandler);
       }
 
       // Create our ROS node. This acts in a similar manner to
       // the Gazebo node
-      this->rosNode.reset(new ros::NodeHandle("gazebo_client"));
+      this->rosNode.reset(new ros::NodeHandle("robonaldo_gazebo"));
 
       // Create a named topic, and subscribe to it.
       ros::SubscribeOptions so =
