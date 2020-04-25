@@ -1,7 +1,8 @@
 #include "ros/ros.h"
 #include "robonaldo_msgs/imu_values.h"
-#include "robonaldo_msgs/orientation.h"
+#include <sensor_msgs/Imu.h>
 #include "MadgwickAHRS.h"
+#include <tf/LinearMath/Quaternion.h>
 
 //am I allowed to make global variables? we will see 
 float yawRad=0;
@@ -34,17 +35,17 @@ void userInputCallback(const robonaldo_msgs::imu_values::ConstPtr& msg){
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "fused_orientation");
 	ros::NodeHandle n;
-	ros::Publisher orientation_pub = n.advertise<robonaldo_msgs::orientation>("orientation", 1000);
+	ros::Publisher orientation_pub = n.advertise<sensor_msgs::Imu>("orientation", 1000);
 	ros::Subscriber sub = n.subscribe("imu_values", 1000, userInputCallback);
 	ros::Rate loop_rate(10);
 	
 	while (ros::ok()) {
 
 //the 57 number is the number to convert radians to degrees i think 
-		robonaldo_msgs::orientation msg;
-		msg.yaw = filter.getYaw();
-		msg.pitch = filter.getPitch();
-		msg.roll = filter.getRoll();
+		sensor_msgs::Imu msg;
+		
+		tf::Quaternion myQuaternion;
+		myQuaternion.setRPY( filter.getRoll(), filter.getPitch(), filter.getYaw());
 
 		orientation_pub.publish(msg);
 
