@@ -17,8 +17,9 @@
 #include "ros/subscribe_options.h"
 #include "std_msgs/Float32.h"
 #include "robonaldo_msgs/motor_speeds.h"
+#include "robonaldo_msgs/imu_values.h"
+
 #include <memory>
-#include "robonaldo_imu_plugin.cpp"
 
 const float max_speed = (5330.0f/12.75f) * (M_PI*0.2017776f) / 60.0f; //units: m/s 5330 is max speed of motor in rpm, div by 12.75 rot per sec
 
@@ -61,11 +62,12 @@ namespace gazebo
       // Use same names as imu and magnetometer names in model.sdf file to get the imu and sensor data from model
       sensors::SensorManager *pMgr = sensors::SensorManager::Instance() ;
       this->imu = std::dynamic_pointer_cast<sensors::ImuSensor>(pMgr->GetSensor("imu"));
-      this->magnetometer = pMgr->GetSensor("magnetometer");      
+      this->magnetometer = pMgr->GetSensor("magnetometer");            
+      // this->magnetometer = std::dynamic_pointer_cast<sensors::MagnetometerSensor>(pMgr->GetSensor("magnetometer"));
       
       // SensorPlugin for updating and publishing sensor data
-      RobonaldoSensors sensorsPlugin;
-      sensorsPlugin.Load(this->magnetometer, this->imu, _sdf); 
+      // RobonaldoSensors sensorsPlugin;
+      // sensorsPlugin.Load(this->magnetometer, this->imu, _sdf); 
       // Add another joint
 
       // Setup a P-controller, with a gain of 0.1.
@@ -142,6 +144,38 @@ namespace gazebo
         this->rosQueue.callAvailable(ros::WallDuration(timeout));
       }
     }
+    private: void PublisherThread()
+    {
+      // do i need the following line? it is giving errors and i dontio understandio
+      // anjali do be confusedio
+      // imu_pub = rosNode->advertise<robonaldo_msgs::imu_values>("imu", 1000);
+      while (this->rosNode->ok())
+      {
+        robonaldo_msgs::imu_values msg;
+
+        //Pose returns a pose3d object
+        msg.mx = this->magnetometer->Pose().Pos()[0];   
+        msg.my = this->magnetometer->Pose().Pos()[1];
+        msg.mz = this->magnetometer->Pose().Pos()[2];
+        
+        //LinearAcceleration(const bool _noiseFree) returns a vector3d
+        msg.ax = this->imu->LinearAcceleration(true)[0];  
+        msg.ay = this->imu->LinearAcceleration(true)[1];  
+        msg.az = this->imu->LinearAcceleration(true)[2];
+
+        //AngularVelocity(const bool _noiseFree) returns a vector3d
+        msg.gx = this->imu->AngularVelocity(true)[0];
+        msg.gy = this->imu->AngularVelocity(true)[1];
+        msg.gz = this->imu->AngularVelocity(true)[2];
+        
+        std::cout << "Imu sensor values:" << std::endl
+                << "\tMagnetometer: x=" << msg.mx << ", y=" << msg.my << ", z=" << msg.mz << std::endl
+                << "\tLinearAccel:  x=" << msg.ax << ", y=" << msg.ay << ", z=" << msg.az << std::endl
+                << "\tAngularVeloc: x=" << msg.gx << ", y=" << msg.gy << ", z=" << msg.gz << std::endl;
+        imu_pub.publish(msg);
+   
+      }      
+    }
     
     /// \brief Pointer to the model.
     private: physics::ModelPtr model;
@@ -161,6 +195,10 @@ namespace gazebo
 
     /// \brief A ROS subscriber
     private: ros::Subscriber rosSub;
+
+    //ROS publisher
+    private: ros::Publisher imu_pub;
+
 
     /// \brief A ROS callbackqueue that helps process messages
     private: ros::CallbackQueue rosQueue;

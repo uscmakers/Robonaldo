@@ -28,22 +28,22 @@ namespace gazebo {
             imu_ = imu;
 
             // Initialize ros, if it has not already bee initialized.
-            if (!ros::isInitialized())
-            {
-                int argc = 0;
-                char **argv = NULL;
-                ros::init(argc, argv, "imu",
-                    ros::init_options::NoSigintHandler);
-            }
+            // if (!ros::isInitialized())
+            // {
+            //     int argc = 0;
+            //     char **argv = NULL;
+            //     ros::init(argc, argv, "imu",
+            //         ros::init_options::NoSigintHandler);
+            // }
 
             // Create our ROS node. This acts in a similar manner to
             // the Gazebo node
-            ros::NodeHandle* n = new ros::NodeHandle("imu"); 
-            this->rosNode.reset(n);
+            // ros::NodeHandle* n = new ros::NodeHandle("imu"); 
+            // this->rosNode.reset(n);
 
             imu_pub = n->advertise<robonaldo_msgs::imu_values>("imu", 1000);
         }
-        protected: virtual void OnUpdate(){
+/*         protected: virtual void OnUpdate(){
             //put sensor xyz and magnetometer xyz in ros message 
             robonaldo_msgs::imu_values msg;
 
@@ -68,7 +68,7 @@ namespace gazebo {
                     << "\tAngularVeloc: x=" << msg.gx << ", y=" << msg.gy << ", z=" << msg.gz << std::endl;
             imu_pub.publish(msg);
 
-        }
+        } */
         
         /// \brief Pointer to the magnetometer
         private: sensors::SensorPtr magnetometer_;
@@ -77,7 +77,7 @@ namespace gazebo {
         private: ros::Publisher imu_pub;
 
         /// \brief A node use for ROS transport
-        private: std::unique_ptr<ros::NodeHandle> rosNode;
+        // private: std::unique_ptr<ros::NodeHandle> rosNode;
 
     };
     // Tell Gazebo about this plugin, so that Gazebo can call Load on this plugin.
