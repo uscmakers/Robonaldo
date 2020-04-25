@@ -22,9 +22,10 @@ namespace gazebo {
     class RobonaldoSensors : public ImuSensorPlugin{
         //default constructor
         public: RobonaldoSensors(){}
-        public: virtual void Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf){
-            //construct magnetometer 
-            magnetometer = _parent;
+        public: virtual void Load(sensors::SensorPtr mag, sensors::ImuSensorPtr imu, sdf::ElementPtr _sdf){
+            //construct sensors 
+            magnetometer_ = mag;
+            imu_ = imu;
 
             // Initialize ros, if it has not already bee initialized.
             if (!ros::isInitialized())
@@ -42,24 +43,24 @@ namespace gazebo {
 
             imu_pub = n->advertise<robonaldo_msgs::imu_values>("imu", 1000);
         }
-        protected: virtual void OnUpdate(sensors::ImuSensorPtr _sensor){
+        protected: virtual void OnUpdate(){
             //put sensor xyz and magnetometer xyz in ros message 
             robonaldo_msgs::imu_values msg;
 
             //Pose returns a pose3d object
-            msg.mx = magnetometer->Pose().Pos()[0];   
-            msg.my = magnetometer->Pose().Pos()[1];
-            msg.mz = magnetometer->Pose().Pos()[2];
+            msg.mx = magnetometer_->Pose().Pos()[0];   
+            msg.my = magnetometer_->Pose().Pos()[1];
+            msg.mz = magnetometer_->Pose().Pos()[2];
             
             //LinearAcceleration(const bool _noiseFree) returns a vector3d
-            msg.ax = _sensor->LinearAcceleration(true)[0];  
-            msg.ay = _sensor->LinearAcceleration(true)[1];  
-            msg.az = _sensor->LinearAcceleration(true)[2];
+            msg.ax = imu_->LinearAcceleration(true)[0];  
+            msg.ay = imu_->LinearAcceleration(true)[1];  
+            msg.az = imu_->LinearAcceleration(true)[2];
 
             //AngularVelocity(const bool _noiseFree) returns a vector3d
-            msg.gx = _sensor->AngularVelocity(true)[0];
-            msg.gy = _sensor->AngularVelocity(true)[1];
-            msg.gz = _sensor->AngularVelocity(true)[2];
+            msg.gx = imu_->AngularVelocity(true)[0];
+            msg.gy = imu_->AngularVelocity(true)[1];
+            msg.gz = imu_->AngularVelocity(true)[2];
             
 
             imu_pub.publish(msg);
@@ -67,8 +68,8 @@ namespace gazebo {
         }
         
         /// \brief Pointer to the magnetometer
-        private: sensors::SensorPtr magnetometer;
-
+        private: sensors::SensorPtr magnetometer_;
+        private: sensors::ImuSensorPtr imu_;
         /// \brief A ROS publisher
         private: ros::Publisher imu_pub;
 
