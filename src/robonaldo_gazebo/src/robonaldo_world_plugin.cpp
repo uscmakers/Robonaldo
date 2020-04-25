@@ -2,6 +2,8 @@
 #include "gazebo/physics/physics.hh"
 #include "gazebo/common/common.hh"
 #include "gazebo/gazebo.hh"
+#include "ros/ros.h"
+
 
 namespace gazebo {
 
@@ -33,7 +35,7 @@ class RobonaldoWorldPlugin : public WorldPlugin {
 
 
 	}
-	private: physcs::WorldPtr world;
+	private: physics::WorldPtr world;
 	private: physics::ModelPtr robo;
 	private: physics::ModelPtr ball;
 

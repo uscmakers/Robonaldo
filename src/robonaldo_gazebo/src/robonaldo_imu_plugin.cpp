@@ -9,7 +9,7 @@
 #include <gazebo/msgs/msgs.hh>
 #include <gazebo/plugins/ImuSensorPlugin.hh>
 
-
+#include <iostream>
 
 #include <thread>
 #include "ros/ros.h"
@@ -62,7 +62,10 @@ namespace gazebo {
             msg.gy = imu_->AngularVelocity(true)[1];
             msg.gz = imu_->AngularVelocity(true)[2];
             
-
+            std::cout << "Sensor values:" << std::endl
+                    << "\tMagnetometer: x=" << msg.mx << ", y=" << msg.my << ", z=" << msg.mz << std::endl
+                    << "\tLinearAccel:  x=" << msg.ax << ", y=" << msg.ay << ", z=" << msg.az << std::endl
+                    << "\tAngularVeloc: x=" << msg.gx << ", y=" << msg.gy << ", z=" << msg.gz << std::endl;
             imu_pub.publish(msg);
 
         }
