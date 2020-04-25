@@ -59,6 +59,8 @@
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>rosserial_arduino</exec_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>nav_msgs</build_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

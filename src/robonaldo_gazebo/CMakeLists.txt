@@ -224,6 +224,11 @@ add_library(robonaldo_plugin SHARED src/robonaldo_plugin.cpp src/robonaldo_imu_p
 target_link_libraries(robonaldo_plugin ${GAZEBO_LIBRARIES} ${roscpp_LIBRARIES})
 add_dependencies(robonaldo_plugin ${catkin_EXPORTED_TARGETS})
 
+add_library(robonaldo_world_plugin SHARED src/robonaldo_world_plugin.cpp)
+target_link_libraries(robonaldo_world_plugin ${GAZEBO_LIBRARIES} ${roscpp_LIBRARIES})
+add_dependencies(robonaldo_world_plugin ${catkin_EXPORTED_TARGETS})
+
+
 install(TARGETS robonaldo_plugin
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

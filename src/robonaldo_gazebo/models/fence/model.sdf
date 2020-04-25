@@ -1,0 +1,81 @@
+<?xml version='1.0'?>
+<sdf version='1.4'>
+  <model name="fence">
+    <static>true</static>
+    <link name='fence1'>
+      <pose>-2.5 0 0 0 0 0</pose>
+      <collision name='collision'>
+        <geometry>
+          <box>
+               <size>.2 5 .5</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <visual name='visual'>
+        <geometry>
+          <box>
+               <size>.2 5 .5</size>
+          </box>
+        </geometry>
+      </visual>
+	</link>
+
+    <link name='fence2'>
+      <pose>0 2.5 0 0 0 0</pose>
+      <collision name='collision'>
+        <geometry>
+          <box>
+               <size>5 .2 .5</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <visual name='visual'>
+        <geometry>
+          <box>
+               <size>5 .2 .5</size>
+          </box>
+        </geometry>
+      </visual>
+  </link>
+
+  <link name='fence3'>
+    <pose>0 -2.5 0 0 0 0</pose>
+    <collision name='collision'>
+      <geometry>
+        <box>
+             <size>5 .2 .5</size>
+        </box>
+      </geometry>
+    </collision>
+
+    <visual name='visual'>
+      <geometry>
+        <box>
+             <size>5 .2 .5</size>
+        </box>
+      </geometry>
+    </visual>
+  </link>
+
+    <link name='fence4'>
+      <pose>2.5 0 0 0 0 0</pose>
+      <collision name='collision'>
+        <geometry>
+          <box>
+               <size>.2 5 .5</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <visual name='visual'>
+        <geometry>
+          <box>
+               <size>.2 5 .5</size>
+          </box>
+        </geometry>
+      </visual>
+  </link>
+  </model>
+</sdf>

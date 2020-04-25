@@ -13,6 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   rosserial_arduino
   robonaldo_msgs
+  tf
+  nav_msgs
 )
 
 ## System dependencies are found with CMake's conventions

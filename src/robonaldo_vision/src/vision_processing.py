@@ -86,9 +86,15 @@ if __name__ == '__main__':
     init_params = sl.InitParameters()
     init_params.depth_mode = sl.DEPTH_MODE.PERFORMANCE  # Use PERFORMANCE depth mode
     init_params.coordinate_units = sl.UNIT.MILLIMETER  # Use milliliter units (for depth measurements)
+    init_params.depth_minimum_distance = 150
+
     init_params.camera_fps = 60
     init_params.camera_resolution = sl.RESOLUTION.VGA
     init_params.depth_minimum_distance = 300
+
+    # Set sensing mode in FILL
+    runtime_parameters =sl.RuntimeParameters()
+    runtime_parameters.sensing_mode = sl.SENSING_MODE.FILL
 
     # Open the camera
     err = zed.open(init_params)
@@ -98,6 +104,7 @@ if __name__ == '__main__':
 
     image_zed = sl.Mat(zed.get_camera_information().camera_resolution.width, zed.get_camera_information().camera_resolution.height, sl.MAT_TYPE.U8_C4)
     depth_zed = sl.Mat(zed.get_camera_information().camera_resolution.width, zed.get_camera_information().camera_resolution.height, sl.MAT_TYPE.F32_C1)
+    image_depth_zed = sl.Mat(zed.get_camera_information().camera_resolution.width, zed.get_camera_information().camera_resolution.height, sl.MAT_TYPE.U8_C4)
 
     pub = rospy.Publisher('ball_position', ball_positions)
     rospy.init_node('vision_processing')
@@ -119,30 +126,41 @@ if __name__ == '__main__':
         # Load depth data into a numpy array
         depth_ocv = depth_zed.get_data()
 
+        zed.retrieve_image(image_depth_zed, sl.VIEW.DEPTH)
+        # Use get_data() to get the numpy array
+        image_depth_ocv = image_depth_zed.get_data()
+
         # get_data() converts ZED object (Mat) to numpy array (for openCV)
         image_ocv = image_zed.get_data()
         green, cX, cY, ball_contour = ballDetect(image_ocv)
         depth, dX, dY, ball_depth = findDepth(ball_contour, depth_ocv)
         
         #print('depth_ocv.shape: ', depth_ocv.shape)
-        #print('depth at center: ', depth_ocv[cY][cX])
+        print('depth at center: ', depth_ocv[cY][cX])
         #print('fixed depth at center: ', depth_ocv[dY][dX])        
 
-        msg = ball_positions(angle=cX, distance=cY)
-        pub.publish(msg)
-        #rate.sleep()
-
         #point cloud
-#        point_cloud = sl.Mat()
-#        zed.retrieve_measure(point_cloud, sl.MEASURE.XYZRGBA)
+        point_cloud = sl.Mat()
+        zed.retrieve_measure(point_cloud, sl.MEASURE.XYZRGBA)
 
-#        err, point_cloud_value = point_cloud.get_value(cX, cY)
+        err, point_cloud_value = point_cloud.get_value(cX, cY)
 
-#        distance = math.sqrt(point_cloud_value[0] * point_cloud_value[0] + point_cloud_value[1] * point_cloud_value[1]  + point_cloud_value[2] * point_cloud_value[2])
-#        print('distance: ', distance)
+        print("X: {}, Y: {}, Z: {}".format(point_cloud_value[0], point_cloud_value[1], point_cloud_value[2]))
+        distance = math.sqrt(point_cloud_value[0] * point_cloud_value[0] + point_cloud_value[1] * point_cloud_value[1]  + point_cloud_value[2] * point_cloud_value[2])
+        print('distance: ', distance)
+
+        x = point_cloud_value[0]
+        z = point_cloud_value[2]
+        angle = math.atan(x/z)
+        angle_degree = math.degrees(angle)
+        print('Angle : {}'.format(angle_degree))
         
-        ball_depth[ball_depth==float_max] = 0
-        ball_depth = cv2.cvtColor(ball_depth, cv2.COLOR_GRAY2BGR)
+        #ball_depth[ball_depth==float_max] = 0
+        #ball_depth = cv2.cvtColor(ball_depth, cv2.COLOR_GRAY2BGR)
+
+        msg = ball_positions(angle=angle_degree, distance=distance)
+        pub.publish(msg)
+        rate.sleep()
 
         cv2.circle(green, (cX, cY), 5, (255, 0, 0), -1)
         cv2.circle(ball_depth, (dX, dY), 5, (0, 0, 255), -1)
@@ -150,9 +168,10 @@ if __name__ == '__main__':
         #note to self: pass image_ocv into ballDetect9()
         # Display left image
         cv2.imshow("Image", image_ocv)
-        cv2.imshow('depth', depth_ocv)
-        cv2.imshow('masked depth', ball_depth)
+        # cv2.imshow('depth', depth_ocv)
+        # cv2.imshow('masked depth', ball_depth)
         cv2.imshow('green', green)
+        cv2.imshow('image depth', image_depth_ocv)
         cv2.waitKey(1)
 
         timer_count -= 1
@@ -161,9 +180,3 @@ if __name__ == '__main__':
             print("FPS:", int(timer_frames/(end_time - start_time)))
             timer_count = timer_frames
             start_time = end_time
-
-
-
-
-    
-    

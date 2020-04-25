@@ -21,5 +21,20 @@
 
     </model>
 
+    <!-- A soccer ball -->
+    <model name="ball">
+      <include>
+        <uri>model://ball</uri>
+      </include>
+    </model>
+
+    <!-- Fence area -->
+    <model name="fence">
+      <include>
+        <uri>model://fence</uri>
+      </include>
+    </model>
+
+    <plugin name="robonaldo_world" filename="librobonaldo_world_plugin.so"/>
   </world>
 </sdf>
