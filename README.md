@@ -70,7 +70,7 @@ Run `rosrun robonaldo talker` to simulate ROS broadcast
 Launch Gaze-bo
 ```
 source devel/setup.bash
-roslaunch ronobaldo_gazebo robonaldo_gazebo.launch
+roslaunch robonaldo_gazebo robonaldo_gazebo.launch
 ```
 
 
