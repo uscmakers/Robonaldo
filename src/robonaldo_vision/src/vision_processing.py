@@ -15,7 +15,6 @@ from robonaldo_msgs.msg import ball_positions
 float_max = np.finfo(np.float32).max
 
 def ballDetect(image):
-    #image = cv2.imread('soccer_pic/ball2.jpg')
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     # Colors are in bgr
     lower = np.array([35, 110, 40], dtype = "uint8")
@@ -41,22 +40,6 @@ def ballDetect(image):
         M = cv2.moments(ball_contour)
         cX = int(M['m10']/M['m00'])
         cY = int(M['m01']/M['m00'])
-
-    """
-    for contour in cntsSorted:
-        peri = cv2.arcLength(contour, True)
-        approx = cv2.approxPolyDP(contour, 0.04*peri, True)
-        if (len(approx) > 8 or len(approx) < 3) and cv2.contourArea(contour) > 200:
-            cv2.drawContours(green, [contour], 0, (0, 0, 255), 3)
-            M = cv2.moments(contour)
-            cX = int(M['m10']/M['m00'])
-            cY = int(M['m01']/M['m00'])
-            cv2.circle(green, (cX, cY), 7, (255, 0, 0), -1)
-            print('center: ({},{})'.format(cX,cY))
-            break
-    """
-
-    #print('center: ({},{})'.format(cX,cY))
 
     return green, cX, cY, ball_contour  
 
@@ -133,13 +116,9 @@ if __name__ == '__main__':
         # get_data() converts ZED object (Mat) to numpy array (for openCV)
         image_ocv = image_zed.get_data()
         green, cX, cY, ball_contour = ballDetect(image_ocv)
-        depth, dX, dY, ball_depth = findDepth(ball_contour, depth_ocv)
-        
-        #print('depth_ocv.shape: ', depth_ocv.shape)
-        print('depth at center: ', depth_ocv[cY][cX])
-        #print('fixed depth at center: ', depth_ocv[dY][dX])        
+        depth, dX, dY, ball_depth = findDepth(ball_contour, depth_ocv)      
 
-        #point cloud
+        # Point cloud
         point_cloud = sl.Mat()
         zed.retrieve_measure(point_cloud, sl.MEASURE.XYZRGBA)
 
@@ -154,9 +133,6 @@ if __name__ == '__main__':
         angle = math.atan(x/z)
         angle_degree = math.degrees(angle)
         print('Angle : {}'.format(angle_degree))
-        
-        #ball_depth[ball_depth==float_max] = 0
-        #ball_depth = cv2.cvtColor(ball_depth, cv2.COLOR_GRAY2BGR)
 
         msg = ball_positions(angle=angle_degree, distance=distance)
         pub.publish(msg)
@@ -168,8 +144,7 @@ if __name__ == '__main__':
         #note to self: pass image_ocv into ballDetect9()
         # Display left image
         cv2.imshow("Image", image_ocv)
-        # cv2.imshow('depth', depth_ocv)
-        # cv2.imshow('masked depth', ball_depth)
+
         cv2.imshow('green', green)
         cv2.imshow('image depth', image_depth_ocv)
         cv2.waitKey(1)
