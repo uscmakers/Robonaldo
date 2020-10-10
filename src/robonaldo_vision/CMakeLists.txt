@@ -10,6 +10,7 @@ project(robonaldo_vision)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   rospy_tutorials
+  roslint
 )
 
 ## System dependencies are found with CMake's conventions
@@ -203,3 +204,5 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+roslint_python()

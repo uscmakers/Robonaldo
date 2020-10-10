@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   roslaunch
   robonaldo_msgs
+  roslint
 )
 
 ## System dependencies are found with CMake's conventions
@@ -220,20 +221,10 @@ add_executable(desktop src/desktop.cpp)
 target_link_libraries(desktop ${catkin_LIBRARIES})
 add_dependencies(desktop ${catkin_EXPORTED_TARGETS})
 
-add_executable(vision src/vision.cpp)
-target_link_libraries(vision ${catkin_LIBRARIES})
-add_dependencies(vision ${catkin_EXPORTED_TARGETS})
-
-add_executable(camera src/camera.cpp)
-target_link_libraries(camera ${catkin_LIBRARIES})
-add_dependencies(camera ${catkin_EXPORTED_TARGETS})
-
-find_package(OpenCV)
-include_directories(${OpenCV_INCLUDE_DIRS})
-target_link_libraries(vision ${OpenCV_LIBRARIES})
-target_link_libraries(camera ${OpenCV_LIBRARIES})
-
 find_package(SDL2)
 include_directories(${SDL2_INCLUDE_DIRS})
 string(STRIP ${SDL2_LIBRARIES} SDL2_LIBRARIES)
 target_link_libraries(desktop ${SDL2_LIBRARIES})
+
+roslint_cpp()
+add_dependencies(desktop roslint_${PROJECT_NAME})

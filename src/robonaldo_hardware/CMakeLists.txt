@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   robonaldo_msgs
   tf
   nav_msgs
+  roslint
 )
 
 ## System dependencies are found with CMake's conventions
@@ -215,3 +216,7 @@ add_dependencies(fused_orientation ${catkin_EXPORTED_TARGETS})
 add_executable(odometry src/odometry.cpp)
 target_link_libraries(odometry ${catkin_LIBRARIES})
 add_dependencies(odometry ${catkin_EXPORTED_TARGETS})
+
+roslint_cpp(src/fused_orientation.cpp src/odometry.cpp)
+add_dependencies(fused_orientation roslint_${PROJECT_NAME})
+add_dependencies(odometry roslint_${PROJECT_NAME})

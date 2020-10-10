@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   robonaldo_msgs
   gazebo_ros
+  roslint
 )
 
 ## System dependencies are found with CMake's conventions
@@ -234,3 +235,6 @@ install(TARGETS robonaldo_plugin
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+roslint_cpp()
+add_dependencies(robonaldo_plugin roslint_${PROJECT_NAME})
