@@ -1,3 +1,5 @@
+// Copyright 2020 USC Makers Robonaldo Inc.
+
 #include "ros/ros.h"
 #include "robonaldo_msgs/keyboard_input.h"
 #include "robonaldo_msgs/motor_speeds.h"
@@ -13,8 +15,7 @@ robonaldo_msgs::motor_speeds motor_speeds_msg;
 
 void userInputCallback(const robonaldo_msgs::keyboard_input::ConstPtr& msg)
 {
-
-  //ROS_INFO("Recieved %u %u %u %u", msg->up, msg->down, msg->left, msg->right);
+  // ROS_INFO("Recieved %u %u %u %u", msg->up, msg->down, msg->left, msg->right);
 
   motor_speeds_msg.left_speed = 0.0f;
   motor_speeds_msg.right_speed = 0.0f;
@@ -42,7 +43,6 @@ void userInputCallback(const robonaldo_msgs::keyboard_input::ConstPtr& msg)
     motor_speeds_msg.left_speed += KEYBOARD_SPEED;
     motor_speeds_msg.right_speed += -KEYBOARD_SPEED;
   }
-
 }
 
 int main(int argc, char **argv)
@@ -60,7 +60,7 @@ int main(int argc, char **argv)
   {
     // This is a message object. stuff it with data and publish it
 
-    //ROS_INFO("Sending %f %f", motor_speeds_msg.left_speed, motor_speeds_msg.right_speed);
+    // ROS_INFO("Sending %f %f", motor_speeds_msg.left_speed, motor_speeds_msg.right_speed);
 
     motor_control_pub.publish(motor_speeds_msg);
 

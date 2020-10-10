@@ -1,3 +1,5 @@
+// Copyright 2020 USC Makers Robonaldo Inc.
+
 #ifndef _ROBONALDO_PLUGIN_HH_
 #define _ROBONALDO_PLUGIN_HH_
 #define _USE_MATH_DEFINES
@@ -7,11 +9,10 @@
 #include <gazebo/physics/physics.hh>
 #include <gazebo/sensors/SensorTypes.hh>
 #include <gazebo/sensors/SensorManager.hh>
-#include "gazebo/sensors/ImuSensor.hh" //yeet
+#include "gazebo/sensors/ImuSensor.hh"  // yeet
 #include <gazebo/transport/transport.hh>
 #include <gazebo/msgs/msgs.hh>
 
-#include <thread>
 #include "ros/ros.h"
 #include "ros/callback_queue.h"
 #include "ros/subscribe_options.h"
@@ -21,7 +22,8 @@
 
 #include <memory>
 
-const float max_speed = (5330.0f / 12.75f) * (M_PI * 0.2017776f) / 60.0f; //units: m/s 5330 is max speed of motor in rpm, div by 12.75 rot per sec
+// units: m/s 5330 is max speed of motor in rpm, div by 12.75 rot per sec
+const float max_speed = (5330.0f / 12.75f) * (M_PI * 0.2017776f) / 60.0f;
 
 namespace gazebo
 {
@@ -41,7 +43,6 @@ public:
 public:
   virtual void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf)
   {
-
     // Just output a message for now
     std::cerr << "\nThe robonaldo plugin is attached to model[" <<
               _model->GetName() << "]\n";
@@ -62,7 +63,7 @@ public:
     this->right_wheel = _model->GetJoints()[1];
 
     // Use same names as imu and magnetometer names in model.sdf file to get the imu and sensor data from model
-    sensors::SensorManager *pMgr = sensors::SensorManager::Instance() ;
+    sensors::SensorManager *pMgr = sensors::SensorManager::Instance();
     this->imu = std::dynamic_pointer_cast<sensors::ImuSensor>(pMgr->GetSensor("imu"));
     this->magnetometer = pMgr->GetSensor("magnetometer");
     // this->magnetometer = std::dynamic_pointer_cast<sensors::MagnetometerSensor>(pMgr->GetSensor("magnetometer"));
@@ -159,17 +160,17 @@ private:
     {
       robonaldo_msgs::imu_values msg;
 
-      //Pose returns a pose3d object
+      // Pose returns a pose3d object
       msg.mx = this->magnetometer->Pose().Pos()[0];
       msg.my = this->magnetometer->Pose().Pos()[1];
       msg.mz = this->magnetometer->Pose().Pos()[2];
 
-      //LinearAcceleration(const bool _noiseFree) returns a vector3d
+      // LinearAcceleration(const bool _noiseFree) returns a vector3d
       msg.ax = this->imu->LinearAcceleration(true)[0];
       msg.ay = this->imu->LinearAcceleration(true)[1];
       msg.az = this->imu->LinearAcceleration(true)[2];
 
-      //AngularVelocity(const bool _noiseFree) returns a vector3d
+      // AngularVelocity(const bool _noiseFree) returns a vector3d
       msg.gx = this->imu->AngularVelocity(true)[0];
       msg.gy = this->imu->AngularVelocity(true)[1];
       msg.gz = this->imu->AngularVelocity(true)[2];
@@ -179,7 +180,6 @@ private:
                 << "\tLinearAccel:  x=" << msg.ax << ", y=" << msg.ay << ", z=" << msg.az << std::endl
                 << "\tAngularVeloc: x=" << msg.gx << ", y=" << msg.gy << ", z=" << msg.gz << std::endl;
       imu_pub.publish(msg);
-
     }
   }
 
@@ -210,7 +210,7 @@ private:
 private:
   ros::Subscriber rosSub;
 
-  //ROS publisher
+  // ROS publisher
 private:
   ros::Publisher imu_pub;
 
@@ -226,5 +226,5 @@ private:
 
 // Tell Gazebo about this plugin, so that Gazebo can call Load on this plugin.
 GZ_REGISTER_MODEL_PLUGIN(RobonaldoPlugin)
-}
+}  // namespace gazebo
 #endif
