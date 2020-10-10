@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-PKG = 'robonaldo_vision'
-import roslib; roslib.load_manifest(PKG)
 
 import time
 import numpy as np
@@ -9,16 +7,22 @@ import pyzed.sl as sl
 import math
 import queue
 
+import roslib
 import rospy
 from robonaldo_msgs.msg import ball_positions
 
+PKG = 'robonaldo_vision'
+roslib.load_manifest(PKG)
+
+
 float_max = np.finfo(np.float32).max
+
 
 def ballDetect(image):
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     # Colors are in bgr
-    lower = np.array([35, 110, 40], dtype = "uint8")
-    upper = np.array([90, 255,200], dtype = "uint8")
+    lower = np.array([35, 110, 40], dtype="uint8")
+    upper = np.array([90, 255, 200], dtype="uint8")
     mask = cv2.inRange(hsv, lower, upper)
 
     imask = mask > 0
@@ -26,7 +30,7 @@ def ballDetect(image):
     green[imask] = image[imask]
 
     contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cntsSorted = sorted(contours, key = cv2.contourArea, reverse=True)
+    cntsSorted = sorted(contours, key=cv2.contourArea, reverse=True)
     cX = -1
     cY = -1
 
@@ -41,7 +45,8 @@ def ballDetect(image):
         cX = int(M['m10']/M['m00'])
         cY = int(M['m01']/M['m00'])
 
-    return green, cX, cY, ball_contour  
+    return green, cX, cY, ball_contour
+
 
 def findDepth(ball_contour, depth_map):
     dY, dX, depth = -1, -1, -1
@@ -60,7 +65,7 @@ def findDepth(ball_contour, depth_map):
 
     return depth, dX, dY, masked_depth
 
-    
+
 if __name__ == '__main__':
 
     zed = sl.Camera()
@@ -76,7 +81,7 @@ if __name__ == '__main__':
     init_params.depth_minimum_distance = 300
 
     # Set sensing mode in FILL
-    runtime_parameters =sl.RuntimeParameters()
+    runtime_parameters = sl.RuntimeParameters()
     runtime_parameters.sensing_mode = sl.SENSING_MODE.FILL
 
     # Open the camera
@@ -85,13 +90,15 @@ if __name__ == '__main__':
         print('Error is ', err)
         exit(1)
 
-    image_zed = sl.Mat(zed.get_camera_information().camera_resolution.width, zed.get_camera_information().camera_resolution.height, sl.MAT_TYPE.U8_C4)
-    depth_zed = sl.Mat(zed.get_camera_information().camera_resolution.width, zed.get_camera_information().camera_resolution.height, sl.MAT_TYPE.F32_C1)
-    image_depth_zed = sl.Mat(zed.get_camera_information().camera_resolution.width, zed.get_camera_information().camera_resolution.height, sl.MAT_TYPE.U8_C4)
+    camera_height = zed.get_camera_information().camera_resolution.height
+    camera_width = zed.get_camera_information().camera_resolution.width
+    image_zed = sl.Mat(camera_width, camera_height, sl.MAT_TYPE.U8_C4)
+    depth_zed = sl.Mat(camera_width, camera_height, sl.MAT_TYPE.F32_C1)
+    image_depth_zed = sl.Mat(camera_width, camera_height, sl.MAT_TYPE.U8_C4)
 
     pub = rospy.Publisher('ball_position', ball_positions)
     rospy.init_node('vision_processing')
-    rate = rospy.Rate(60) #loops 10 times per second
+    rate = rospy.Rate(60)  # loops 10 times per second
 
     timer_frames = 5
 
@@ -116,7 +123,7 @@ if __name__ == '__main__':
         # get_data() converts ZED object (Mat) to numpy array (for openCV)
         image_ocv = image_zed.get_data()
         green, cX, cY, ball_contour = ballDetect(image_ocv)
-        depth, dX, dY, ball_depth = findDepth(ball_contour, depth_ocv)      
+        depth, dX, dY, ball_depth = findDepth(ball_contour, depth_ocv)
 
         # Point cloud
         point_cloud = sl.Mat()
@@ -125,7 +132,7 @@ if __name__ == '__main__':
         err, point_cloud_value = point_cloud.get_value(cX, cY)
 
         print("X: {}, Y: {}, Z: {}".format(point_cloud_value[0], point_cloud_value[1], point_cloud_value[2]))
-        distance = math.sqrt(point_cloud_value[0] * point_cloud_value[0] + point_cloud_value[1] * point_cloud_value[1]  + point_cloud_value[2] * point_cloud_value[2])
+        distance = math.sqrt(point_cloud_value[0] ** 2 + point_cloud_value[1] ** 2 + point_cloud_value[2] ** 2)
         print('distance: ', distance)
 
         x = point_cloud_value[0]
@@ -141,7 +148,7 @@ if __name__ == '__main__':
         cv2.circle(green, (cX, cY), 5, (255, 0, 0), -1)
         cv2.circle(ball_depth, (dX, dY), 5, (0, 0, 255), -1)
 
-        #note to self: pass image_ocv into ballDetect9()
+        # note to self: pass image_ocv into ballDetect9()
         # Display left image
         cv2.imshow("Image", image_ocv)
 

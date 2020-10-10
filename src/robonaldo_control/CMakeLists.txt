@@ -227,4 +227,4 @@ string(STRIP ${SDL2_LIBRARIES} SDL2_LIBRARIES)
 target_link_libraries(desktop ${SDL2_LIBRARIES})
 
 roslint_cpp()
-add_dependencies(desktop roslint_${PROJECT_NAME})
+add_custom_target(lint_${PROJECT_NAME} ALL DEPENDS roslint_${PROJECT_NAME})

@@ -206,3 +206,4 @@ include_directories(
 # catkin_add_nosetests(test)
 
 roslint_python()
+add_custom_target(lint_${PROJECT_NAME} ALL DEPENDS roslint_${PROJECT_NAME})

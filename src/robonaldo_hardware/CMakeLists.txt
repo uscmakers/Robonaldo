@@ -217,6 +217,6 @@ add_executable(odometry src/odometry.cpp)
 target_link_libraries(odometry ${catkin_LIBRARIES})
 add_dependencies(odometry ${catkin_EXPORTED_TARGETS})
 
+# Only including 
 roslint_cpp(src/fused_orientation.cpp src/odometry.cpp)
-add_dependencies(fused_orientation roslint_${PROJECT_NAME})
-add_dependencies(odometry roslint_${PROJECT_NAME})
+add_custom_target(lint_${PROJECT_NAME} ALL DEPENDS roslint_${PROJECT_NAME})
