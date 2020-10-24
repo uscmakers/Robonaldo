@@ -11,6 +11,9 @@ const float MIN_LEFT_SPEED = 1.0f;
 
 const float KEYBOARD_SPEED = 0.25f;
 
+const float ANGLE_THRESHOLD = 45.0f;     // Maybe decrease to 30 or something lower than 45? cuz camera can't see super wide
+const float ANGLE_MAX_SPEED = 0.25f;  // represents motor max speed for turning
+
 robonaldo_msgs::motor_speeds motor_speeds_msg;
 
 void userInputCallback(const robonaldo_msgs::keyboard_input::ConstPtr& msg)
@@ -44,13 +47,35 @@ void userInputCallback(const robonaldo_msgs::keyboard_input::ConstPtr& msg)
     motor_speeds_msg.right_speed += -KEYBOARD_SPEED;
   }
 }
+void ballPositionCallback(const robonaldo_msgs::ball_positions::ConstPtr& msg){
+  // Want to turn motors in direction of ball
+  if (msg->angle <= ANGLE_THRESHOLD){
+    // max speed 25% ish, at what angle do we stop going at max speed and slow down etc
+    // divide 50% by theta
+    motor_speeds_msg.left_speed = ( -1 * ANGLE_MAX_SPEED * msg->angle ) / ANGLE_THRESHOLD;
+    motor_speeds_msg.right_speed = ( ANGLE_MAX_SPEED * msg->angle ) / ANGLE_THRESHOLD;
+  }
+  else{   // keep turning until we find the ball in the direction of the angle
+    if (msg->angle < 0.0f){  // clockwise (turn left) if angle is negative
+      motor_speeds_msg.left_speed = -1 * ANGLE_MAX_SPEED;
+      motor_speeds_msg.right_speed = ANGLE_MAX_SPEED;
+    }
+    else{   // counterclockwise (turn right) if angle is positive
+      motor_speeds_msg.left_speed = ANGLE_MAX_SPEED;
+      motor_speeds_msg.right_speed = -1 * ANGLE_MAX_SPEED;
+    }
+  }
 
+  // And later go to ball too maybe using encoder data but idk
+
+}
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "decider");
   ros::NodeHandle n;
   ros::Publisher motor_control_pub = n.advertise<robonaldo_msgs::motor_speeds>("motor_control", 1000);
-  ros::Subscriber sub = n.subscribe("user_input", 1000, userInputCallback);
+  // ros::Subscriber sub = n.subscribe("user_input", 1000, userInputCallback);
+  ros::Subscriber sub = n.subscribe("ball_position", 1000, ballPositionCallback);
   ros::Rate loop_rate(60);
 
   motor_speeds_msg.left_speed = 0.0;
