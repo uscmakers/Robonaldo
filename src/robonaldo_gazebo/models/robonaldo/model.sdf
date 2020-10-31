@@ -23,7 +23,7 @@
           </box>
         </geometry>
       </visual>
-      <collision name="caster_collision">
+      <collision name="front_caster_collision">
         <pose>-0.2 0 -0.05 0 0 0</pose>
         <!--inertial><mass>6.0</mass></inertial-->
 
@@ -44,8 +44,47 @@
         </surface>
       </collision>
 
-      <visual name="caster_visual">
+      <visual name="front_caster_visual">
         <pose>-0.2 0 -0.05 0 0 0</pose>
+        <!--inertial><mass>6.0</mass></inertial-->
+        
+        <geometry>
+          <sphere>
+            <radius>.05</radius>
+          </sphere>
+        </geometry>
+        <!--To make caster wheel heavier, use flesh_mass_fraction-->
+        <!--surface>
+          <soft_contact>
+            <dart>
+              <flesh_mass_fraction>.5</flesh_mass_fraction>
+            </dart>
+          </soft_contact>
+        </surface-->
+      </visual>
+      <collision name="back_caster_collision">
+        <pose>0.2 0 -0.05 0 0 0</pose>
+        <!--inertial><mass>6.0</mass></inertial-->
+
+        <geometry>
+          <sphere>
+            <radius>.05</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+              <slip1>1.0</slip1>
+              <slip2>1.0</slip2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+
+      <visual name="back_caster_visual">
+        <pose>0.2 0 -0.05 0 0 0</pose>
         <!--inertial><mass>6.0</mass></inertial-->
         
         <geometry>
@@ -131,7 +170,7 @@
       <child>left_wheel</child>
       <parent>chassis</parent>
       <axis>
-        <xyz>0 1 0</xyz>
+        <xyz>0 0 1</xyz>
       </axis>
     </joint>
     <joint type="revolute" name="right_wheel_hinge">
@@ -139,7 +178,7 @@
       <child>right_wheel</child>
       <parent>chassis</parent>
       <axis>
-        <xyz>0 1 0</xyz>
+        <xyz>0 0 1</xyz>
       </axis>
     </joint>
 

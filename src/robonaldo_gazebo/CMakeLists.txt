@@ -238,3 +238,7 @@ install(TARGETS robonaldo_plugin
 
 roslint_cpp()
 add_custom_target(lint_${PROJECT_NAME} ALL DEPENDS roslint_${PROJECT_NAME})
+
+install(DIRECTORY models
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
